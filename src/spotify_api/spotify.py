@@ -1,13 +1,27 @@
 from spotify_api.api import SpotifyApi
 
+import os
+from pathlib import Path
+
 if __name__ == '__main__':
     pass
 
-client_id = '88596666d75941c3abb43ab8a1b67b8f'
-client_secret = '4406a158a41045ccb6e013cd8756b0db'
+keys_file = open('../keys.txt')
+
+client_id = keys_file.readline()
+client_secret = keys_file.readline()
+
+keys_file.close()
+
 redirect_uri = 'http://localhost:8888/callback'
 
 scope_list = ['user-library-read', 'user-library-modify', 'user-read-currently-playing']
+
+directory = str(Path.home()) + '/.spotify'
+
+if not os.path.exists(directory):
+    
+    os.makedirs(directory)
 
 api = SpotifyApi(scope_list=scope_list, client_id=client_id, 
                  client_secret=client_secret, redirect_uri=redirect_uri)

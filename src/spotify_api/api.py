@@ -6,7 +6,7 @@ import json
 from json.decoder import JSONDecodeError
 from pathlib import Path
 
-auth_keys_path = str(Path.home()) + '/.auth.txt'
+auth_keys_path = str(Path.home()) + '/.save_song/auth.txt'
 
 api_url = 'https://api.spotify.com/v1/'
 authorize_access_url = 'https://accounts.spotify.com/authorize/'
@@ -100,6 +100,8 @@ class SpotifyApi(object):
         self.refresh_token = file.readline().rstrip('\n')
         self.obtained_time = float(file.readline().rstrip('\n'))
         self.duration = float(file.readline().rstrip('\n'))
+        
+        print('authenticated')
         
     def get_access_header(self):
         

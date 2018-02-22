@@ -1,3 +1,4 @@
 .project
 .pydevproject
 src/**/__pycache__/
+src/**/keys.txt
