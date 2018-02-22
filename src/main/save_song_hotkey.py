@@ -1,9 +1,3 @@
-'''
-Created on Feb 18, 2018
-
-@author: platelminto
-'''
-
 import sys
 import os
 

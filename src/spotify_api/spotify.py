@@ -1,9 +1,3 @@
-'''
-Created on Feb 17, 2018
-
-@author: platelminto
-'''
-
 from spotify_api.api import SpotifyApi
 
 if __name__ == '__main__':

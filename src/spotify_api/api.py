@@ -1,9 +1,3 @@
-'''
-Created on Feb 21, 2018
-
-@author: platelminto
-'''
-
 import requests
 import time
 import webbrowser
