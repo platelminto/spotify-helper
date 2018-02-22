@@ -45,4 +45,4 @@ def sendNotif(success, successString, failString):
     n.show()
     
 keyboard.add_hotkey('f8', lambda: saveSong())
-keyboard.wait('esc')
+keyboard.wait()
