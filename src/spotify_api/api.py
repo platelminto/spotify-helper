@@ -44,7 +44,6 @@ class SpotifyApi(object):
             if time.time() - obtained_time > duration:
                 
                 self.refresh_tokens(file)
-                print('updated')
     
     def get_auth_code(self):
         
