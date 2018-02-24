@@ -1,48 +1,47 @@
-import sys
-import os
-
 import keyboard
 import notify2
-import gi
-
-gi.require_version('GdkPixbuf', '2.0')
-from gi.repository import GdkPixbuf
+import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import spotify_api.spotify as spotify
+
+from spotify_api import spotify
 
 if __name__ == '__main__':
     pass
 
-def saveSong():
-    
-    songId = spotify.currentlyPlayingId()
-    
-    isSaved = spotify.isSaved(songId)
-    
-    if isSaved:
-        
-        sendNotif(spotify.removeSongsFromLibrary(songId), 'removed from', 'remove from')
-        
-    else:
-        
-        sendNotif(spotify.addSongsToLibrary(songId), 'added to', 'add to')
 
-def sendNotif(success, successString, failString):
-    
-    notify2.init('')
-    
-    if(success):
-        
-        n = notify2.Notification('Success', 'Successfully ' + successString + ' library')
-    
+def save_song():
+
+    song_id = spotify.currently_playing_id()
+
+    is_saved = spotify.is_saved(song_id)
+
+    if is_saved:
+
+        send_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
+
     else:
-        
-        n = notify2.Notification('Failed', 'Failed to ' + failString + ' library')
-    
-    n.set_icon_from_pixbuf(GdkPixbuf.Pixbuf.new_from_file('../resources/spotify.png'))
+
+        send_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
+
+
+def send_notif(success, success_string, fail_string):
+    notify2.init('')
+
+    if success:
+
+        n = notify2.Notification('Success', 'Successfully ' + success_string + ' library',
+                                 icon=os.path.abspath('../resources/spotify.png'))
+
+    else:
+
+        n = notify2.Notification('Failed', 'Failed to ' + fail_string + ' library',
+                                 icon=os.path.abspath('../resources/spotify.png'))
+
     n.set_timeout(3100)
     n.show()
-    
-keyboard.add_hotkey('f8', lambda: saveSong())
+
+
+keyboard.add_hotkey('f8', lambda: save_song())
 keyboard.wait()

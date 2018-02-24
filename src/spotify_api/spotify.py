@@ -8,8 +8,8 @@ if __name__ == '__main__':
 
 keys_file = open('../keys.txt')
 
-client_id = keys_file.readline()
-client_secret = keys_file.readline()
+client_id = keys_file.readline().rstrip()
+client_secret = keys_file.readline().rstrip()
 
 keys_file.close()
 
@@ -26,18 +26,22 @@ if not os.path.exists(directory):
 api = SpotifyApi(scope_list=scope_list, client_id=client_id, 
                  client_secret=client_secret, redirect_uri=redirect_uri)
 
-def addSongsToLibrary(*songIds):
 
-    return api.put('me/tracks', data={'ids':songIds})
-    
-def currentlyPlayingId():
+def add_songs_to_library(*song_ids):
+
+    return api.put('me/tracks', data={'ids': song_ids})
+
+
+def currently_playing_id():
      
     return api.get('me/player/currently-playing').get('item').get('id')
 
-def isSaved(songId):
+
+def is_saved(song_id):
     
-    return api.get('me/tracks/contains?ids=' + songId)[0]
+    return api.get('me/tracks/contains?ids=' + song_id)[0]
+
+
+def remove_songs_from_library(*song_ids):
     
-def removeSongsFromLibrary(*songIds):
-    
-    return api.delete('me/tracks', data={'ids':songIds})
+    return api.delete('me/tracks', data={'ids': song_ids})
