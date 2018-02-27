@@ -26,7 +26,7 @@ class SpotifyApi(object):
             file = open(auth_keys_path, 'r+')
             self.load_auth_values(file)
 
-            self.check_for_refresh_token(file, self.obtained_time, self.duration)
+            self.check_for_refresh_token(file, self.expiry_time)
 
         except (FileNotFoundError, ValueError):
             file = open(auth_keys_path, 'w+')
@@ -34,13 +34,14 @@ class SpotifyApi(object):
             info = self.get_access_info(self.get_auth_code())
 
             self.save_auth_values(file, info.get('access_token'), info.get('refresh_token'),
-                                  current_time, info.get('expires_in'))
+                                  current_time + info.get('expires_in'))
 
         file.close()
 
-    def check_for_refresh_token(self, file, obtained_time, duration):
+    def check_for_refresh_token(self, file, expiry_time):
 
-        if time.time() - obtained_time > duration:
+        if time.time() > expiry_time:
+
             self.refresh_tokens(file)
 
     def get_auth_code(self):
@@ -71,6 +72,8 @@ class SpotifyApi(object):
         headers = {'Authorization': 'Basic ' + base64.b64encode(
             (self.client_id + ':' + self.client_secret).encode('ascii')).decode('ascii')}
 
+        obtained_time = time.time()
+
         r = requests.post(get_token_url, data=payload, headers=headers)
 
         info = r.json()
@@ -79,17 +82,16 @@ class SpotifyApi(object):
 
             self.refresh_token = info.get('refresh_token')
 
-        self.save_auth_values(file, info.get('access_token'), self.refresh_token, time.time(), info.get('expires_in'))
+        self.save_auth_values(file, info.get('access_token'), self.refresh_token, obtained_time + info.get('expires_in'))
         self.load_auth_values(file)
 
-    def save_auth_values(self, file, access_token, refresh_token, obtained_time, duration):
+    def save_auth_values(self, file, access_token, refresh_token, expiry_time):
 
         file.seek(0)
 
         file.write(access_token + '\n')
         file.write(refresh_token + '\n')
-        file.write(str(obtained_time) + '\n')
-        file.write(str(duration))
+        file.write(str(expiry_time) + '\n')
 
         self.load_auth_values(file)
 
@@ -99,8 +101,7 @@ class SpotifyApi(object):
 
         self.access_token = file.readline().rstrip('\n')
         self.refresh_token = file.readline().rstrip('\n')
-        self.obtained_time = float(file.readline().rstrip('\n'))
-        self.duration = float(file.readline().rstrip('\n'))
+        self.expiry_time = float(file.readline().rstrip('\n'))
 
         print('authenticated')
 
@@ -108,7 +109,7 @@ class SpotifyApi(object):
 
         file = open(auth_keys_path, 'r+')
 
-        self.check_for_refresh_token(file, self.obtained_time, self.duration)
+        self.check_for_refresh_token(file, self.expiry_time)
 
         file.close()
 
