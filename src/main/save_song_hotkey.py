@@ -5,14 +5,32 @@ import platform
 from pynput.keyboard import Key, Listener
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+current_os = platform.system()
 
 import spotify_api.spotify as spotify
-import notif_handlers.linux as linux
-import notif_handlers.darwin as darwin
+
+if current_os == 'Linux':
+
+    import notify2
 
 notif_icon_path = os.path.abspath('../resources/spotify.png')
 notif_duration_ms = 3100
-current_os = platform.system()
+
+
+def apple_notify(title, text):
+    os.system("""
+              osascript -e 'display notification "{}" with title "{}"'
+              """.format(text, title))
+
+
+def linux_notify(title, text, icon_path, duration):
+
+    notify2.init('')
+
+    n = notify2.Notification(title, text, icon=icon_path)
+
+    n.set_timeout(duration)
+    n.show()
 
 
 def save_song():
@@ -47,11 +65,11 @@ def send_notif(title, text):
 
     if current_os == 'Linux':
 
-        linux.linux_notify(title, text, notif_icon_path, notif_duration_ms)
+        linux_notify(title, text, notif_icon_path, notif_duration_ms)
 
     elif current_os == 'Darwin':
 
-        darwin.notif_handlers.apple_notify(title, text)
+        apple_notify(title, text)
 
 
 def on_press(key):
