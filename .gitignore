@@ -3,3 +3,5 @@
 src/**/__pycache__/
 src/**/keys.txt
 *.iml
+.idea/
+bin/

@@ -1,47 +1,63 @@
-import keyboard
-import notify2
 import os
 import sys
+import platform
+
+from pynput.keyboard import Key, Listener
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from spotify_api import spotify
+import spotify_api.spotify as spotify
+import notif_handlers.linux as linux
+import notif_handlers.darwin as darwin
 
-if __name__ == '__main__':
-    pass
+notif_icon_path = os.path.abspath('../resources/spotify.png')
+notif_duration_ms = 3100
+current_os = platform.system()
 
 
 def save_song():
-
     song_id = spotify.currently_playing_id()
 
     is_saved = spotify.is_saved(song_id)
 
     if is_saved:
 
-        send_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
+        make_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
 
     else:
 
-        send_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
+        make_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
 
 
-def send_notif(success, success_string, fail_string):
-    notify2.init('')
+def make_notif(success, success_string, fail_string):
+
+    full_success_string = 'Successfully ' + success_string + ' library'
+    full_fail_string = 'Failed to ' + fail_string + ' library'
 
     if success:
 
-        n = notify2.Notification('Success', 'Successfully ' + success_string + ' library',
-                                 icon=os.path.abspath('../resources/spotify.png'))
+        send_notif('Success', full_success_string)
 
     else:
 
-        n = notify2.Notification('Failed', 'Failed to ' + fail_string + ' library',
-                                 icon=os.path.abspath('../resources/spotify.png'))
-
-    n.set_timeout(3100)
-    n.show()
+        send_notif('Failure', full_fail_string)
 
 
-keyboard.add_hotkey('f8', lambda: save_song())
-keyboard.wait()
+def send_notif(title, text):
+
+    if current_os == 'Linux':
+
+        linux.linux_notify(title, text, notif_icon_path, notif_duration_ms)
+
+    elif current_os == 'Darwin':
+
+        darwin.notif_handlers.apple_notify(title, text)
+
+
+def on_press(key):
+    if key == Key.f8:
+        save_song()
+
+
+with Listener(on_press=on_press) as listener:
+    listener.join()
