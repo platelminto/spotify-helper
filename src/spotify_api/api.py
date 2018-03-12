@@ -126,7 +126,7 @@ class SpotifyApi(object):
 
     def post(self, endpoint, payload=None):
 
-        r = requests.post(api_url + endpoint, data=payload, headers=self.get_access_header())
+        r = requests.post(api_url + endpoint, data=json.dumps(payload), headers=self.get_access_header())
 
         try:
             return r.json()
@@ -142,9 +142,9 @@ class SpotifyApi(object):
         except JSONDecodeError:
             return r
 
-    def delete(self, endpoint, data=None):
+    def delete(self, endpoint, payload=None):
 
-        r = requests.delete(api_url + endpoint, headers=self.get_access_header(), data=json.dumps(data))
+        r = requests.delete(api_url + endpoint, headers=self.get_access_header(), data=json.dumps(payload))
 
         try:
             return r.json()
