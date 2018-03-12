@@ -40,10 +40,12 @@ def save_song():
 
     if is_saved:
 
+        spotify.remove_song_from_monthly_playlist('spotify:track:' + song_id)
         make_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
 
     else:
 
+        spotify.add_songs_to_monthly_playlist('spotify:track:' + song_id)
         make_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
 
 
