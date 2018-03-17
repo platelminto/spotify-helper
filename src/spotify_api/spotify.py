@@ -44,4 +44,4 @@ def is_saved(song_id):
 
 def remove_songs_from_library(*song_ids):
     
-    return api.delete('me/tracks', data={'ids': song_ids})
+    return api.delete('me/tracks', payload={'ids': song_ids})
