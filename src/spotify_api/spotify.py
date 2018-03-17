@@ -16,11 +16,6 @@ redirect_uri = 'http://localhost:8888/callback'
 
 scope_list = ['user-library-read', 'user-library-modify', 'user-read-currently-playing']
 
-status_code_dict = {
-    400: 'Malformed request',
-    401: 'Unauthorized, try again',
-}
-
 api = SpotifyApi(scope_list=scope_list, client_id=client_id, 
                  client_secret=client_secret, redirect_uri=redirect_uri)
 
