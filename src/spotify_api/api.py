@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 import requests
 import time
 import webbrowser
@@ -80,7 +82,8 @@ class SpotifyApi(object):
 
             self.refresh_token = info.get('refresh_token')
 
-        self.save_auth_values(file, info.get('access_token'), self.refresh_token, obtained_time + info.get('expires_in'))
+        self.save_auth_values(file, info.get('access_token'), self.refresh_token,
+                              obtained_time + info.get('expires_in'))
         self.load_auth_values(file)
 
     def save_auth_values(self, file, access_token, refresh_token, expiry_time):
@@ -113,26 +116,45 @@ class SpotifyApi(object):
 
         return {'Authorization': 'Bearer ' + self.access_token}
 
+    def check_status_code(self, r):
+        code = r.status_code
+
+        if code > 300:
+            print(code)
+            if code == 400:
+                print('Malformed request')
+            elif code == 401:
+                print('Refreshing tokens, try again')
+                with open(self.auth_keys_path, 'w+') as file:
+                    self.refresh_tokens(file)
+            return None
+
+        else:
+            try:
+                return r.json()
+            except JSONDecodeError:
+                return r
+
     def get(self, endpoint, params=None):
 
-        r = requests.get(self.api_url + endpoint, params=params, headers=self.get_access_header())
-
+        r = self.check_status_code(requests.get(self.api_url + endpoint,
+                                                params=params, headers=self.get_access_header()))
         return r
 
     def post(self, endpoint, payload=None):
 
-        r = requests.post(self.api_url + endpoint, data=json.dumps(payload), headers=self.get_access_header())
-
+        r = self.check_status_code(requests.post(self.api_url + endpoint,
+                                                 data=json.dumps(payload), headers=self.get_access_header()))
         return r
 
     def put(self, endpoint, data=None):
 
-        r = requests.put(self.api_url + endpoint, data=json.dumps(data), headers=self.get_access_header())
-
+        r = self.check_status_code(requests.put(self.api_url + endpoint,
+                                                data=json.dumps(data), headers=self.get_access_header()))
         return r
 
     def delete(self, endpoint, payload=None):
 
-        r = requests.delete(self.api_url + endpoint, headers=self.get_access_header(), data=json.dumps(payload))
-
+        r = self.check_status_code(requests.delete(self.api_url + endpoint,
+                                                   headers=self.get_access_header(), data=json.dumps(payload)))
         return r
