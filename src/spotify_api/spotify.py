@@ -42,20 +42,16 @@ def check_status_code(r):
 
 
 def add_songs_to_library(*song_ids):
-
-    return check_status_code(api.put('me/tracks', data={'ids': song_ids}))
+    return api.put('me/tracks', data={'ids': song_ids})
 
 
 def currently_playing_id():
-     
-    return check_status_code(api.get('me/player/currently-playing')).get('item').get('id')
+    return api.get('me/player/currently-playing').get('item').get('id')
 
 
 def is_saved(song_id):
-    
-    return check_status_code(api.get('me/tracks/contains?ids=' + song_id))[0]
+    return api.get('me/tracks/contains?ids=' + song_id)[0]
 
 
 def remove_songs_from_library(*song_ids):
-    
-    return check_status_code(api.delete('me/tracks', payload={'ids': song_ids}))
+    return api.delete('me/tracks', payload={'ids': song_ids})
