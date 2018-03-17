@@ -25,7 +25,8 @@ notif_duration_ms = 3100
 def windows_notify(title, text, icon_path, duration):
     toaster = ToastNotifier()
     toaster.show_toast(title, text, icon_path=icon_path, duration=(duration/1000)-1, threaded=True)
-    while toaster.notification_active(): time.sleep(0.1)
+    while toaster.notification_active():
+        time.sleep(0.1)
 
 
 def apple_notify(title, text):
