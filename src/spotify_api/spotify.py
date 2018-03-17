@@ -1,8 +1,5 @@
-from json import JSONDecodeError
-
 from spotify_api.api import SpotifyApi
 
-import os
 import datetime
 
 if __name__ == '__main__':
@@ -24,28 +21,8 @@ api = SpotifyApi(scope_list=scope_list, client_id=client_id,
                  client_secret=client_secret, redirect_uri=redirect_uri)
 
 
-def check_status_code(r):
-    code = r.status_code
-
-    if code > 300:
-        print(code)
-        if code == 400:
-            print('Malformed request')
-        elif code == 401:
-            print('Refreshing tokens, try again')
-            with open(api.auth_keys_path, 'w+') as file:
-                api.refresh_tokens(file)
-        return None
-
-    else:
-        try:
-            return r.json()
-        except JSONDecodeError:
-            return r
-
-
 def fetch_user_id():
-    return check_status_code(api.get('me').get('id'))
+    return api.get('me').get('id')
 
 
 def monthly_playlist_id():
@@ -97,31 +74,31 @@ def fetch_playlist_id(month, year):
         if str(playlist.get('name')).lower() == (month + ' ' + year).lower():
             return playlist.get('id')
 
-    return check_status_code(api.post('users/' + get_user_id() + '/playlists',
-                                      payload={'name': (month.capitalize() + ' ' + year)})).get('id')
+    return api.post('users/' + get_user_id() + '/playlists',
+                    payload={'name': (month.capitalize() + ' ' + year)}).get('id')
 
 
 def add_songs_to_monthly_playlist(*song_ids):
-    return check_status_code(api.post('users/' + get_user_id() + '/playlists/' + monthly_playlist_id() + '/tracks',
-                                      payload={'uris': song_ids}))
+    return api.post('users/' + get_user_id() + '/playlists/' + monthly_playlist_id() + '/tracks',
+                    payload={'uris': song_ids})
 
 
 def remove_song_from_monthly_playlist(song_id):
-    return check_status_code(api.delete('users/' + get_user_id() + '/playlists/' + monthly_playlist_id() + '/tracks',
-                                        payload={'tracks': [{'uri': song_id}]}))
+    return api.delete('users/' + get_user_id() + '/playlists/' + monthly_playlist_id() + '/tracks',
+                      payload={'tracks': [{'uri': song_id}]})
 
 
 def add_songs_to_library(*song_ids):
-    return check_status_code(api.put('me/tracks', data={'ids': song_ids}))
+    return api.put('me/tracks', data={'ids': song_ids})
 
 
 def currently_playing_id():
-    return check_status_code(api.get('me/player/currently-playing')).get('item').get('id')
+    return api.get('me/player/currently-playing').get('item').get('id')
 
 
 def is_saved(song_id):
-    return check_status_code(api.get('me/tracks/contains?ids=' + song_id))[0]
+    return api.get('me/tracks/contains?ids=' + song_id)[0]
 
 
 def remove_songs_from_library(*song_ids):
-    return check_status_code(api.delete('me/tracks', payload={'ids': song_ids}))
+    return api.delete('me/tracks', payload={'ids': song_ids})
