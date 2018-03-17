@@ -1,5 +1,3 @@
-from json import JSONDecodeError
-
 from spotify_api.api import SpotifyApi
 
 if __name__ == '__main__':
@@ -18,27 +16,6 @@ scope_list = ['user-library-read', 'user-library-modify', 'user-read-currently-p
 
 api = SpotifyApi(scope_list=scope_list, client_id=client_id, 
                  client_secret=client_secret, redirect_uri=redirect_uri)
-
-
-def check_status_code(r):
-
-    code = r.status_code
-
-    if code > 300:
-        print(code)
-        if code == 400:
-            print('Malformed request')
-        elif code == 401:
-            print('Refreshing tokens, try again')
-            with open(api.auth_keys_path, 'w+') as file:
-                api.refresh_tokens(file)
-        return None
-
-    else:
-        try:
-            return r.json()
-        except JSONDecodeError:
-            return r
 
 
 def add_songs_to_library(*song_ids):
