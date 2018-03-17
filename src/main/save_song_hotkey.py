@@ -11,7 +11,7 @@ import spotify_api.spotify as spotify
 
 if current_os == 'Linux':
 
-    import notify2
+    import dbus
 
 notif_icon_path = os.path.abspath('../resources/spotify.png')
 notif_duration_ms = 3100
@@ -25,12 +25,12 @@ def apple_notify(title, text):
 
 def linux_notify(title, text, icon_path, duration):
 
-    notify2.init('')
+    bus = dbus.SessionBus()
 
-    n = notify2.Notification(title, text, icon=icon_path)
+    notify = bus.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
+    method = notify.get_dbus_method('Notify', 'org.freedesktop.Notifications')
 
-    n.set_timeout(duration)
-    n.show()
+    method("easy-save-song-spotify", 24, icon_path, title, text, [], [], duration)
 
 
 def save_song():
