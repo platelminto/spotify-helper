@@ -1,6 +1,7 @@
 import os
 import sys
 import platform
+import time
 
 from pynput.keyboard import Key, Listener
 
@@ -15,15 +16,16 @@ if current_os == 'Linux':
 
 if current_os == 'Windows':
 
-    import win10toast.ToastNotifier
+    from win10toast import ToastNotifier
 
-notif_icon_path = os.path.abspath('../resources/spotify.png')
+notif_icon_path = os.path.abspath('../resources/spotify.ico')
 notif_duration_ms = 3100
 
 
 def windows_notify(title, text, icon_path, duration):
-    toaster = win10toast.ToastNotifier()
-    toaster.show_toast(title, text, icon_path=icon_path, duration=duration)
+    toaster = ToastNotifier()
+    toaster.show_toast(title, text, icon_path=icon_path, duration=(duration/1000)-1, threaded=True)
+    while toaster.notification_active(): time.sleep(0.1)
 
 
 def apple_notify(title, text):
@@ -79,6 +81,10 @@ def send_notif(title, text):
     elif current_os == 'Darwin':
 
         apple_notify(title, text)
+
+    elif current_os == 'Windows':
+
+        windows_notify(title, text, notif_icon_path, notif_duration_ms)
 
 
 def on_press(key):
