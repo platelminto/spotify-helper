@@ -5,5 +5,4 @@ src/**/keys.txt
 *.iml
 .idea/
 bin/
-src/month_id.txt
-src/user_id.txt
+src/*.txt
