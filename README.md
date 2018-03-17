@@ -1,4 +1,4 @@
-Easily save songs currently playing from Spotify to your library using a hotkey or key combo. (Currently only f8, will make this easily editable). Only on linux & mac for now, has to be run as sudo on the latter for the keyboard access.
+Easily save songs currently playing from Spotify to your library using a hotkey or key combo. (Currently only f8, will make this easily editable). Has to be run as sudo on macOS to be able to access raw keyboard inputs.
 
 Make a keys.txt file in the src/ directory, with client_id & secret obtained from making an API application [here](https://beta.developer.spotify.com/dashboard/applications), putting them on the first and second line of the file, respectively. In the application dashboard, go to 'Edit Settings', and set the redirect URI to 'http://localhost:8888/callback'
 
