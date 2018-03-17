@@ -6,7 +6,7 @@ import json
 from json.decoder import JSONDecodeError
 from pathlib import Path
 
-auth_keys_path = str(Path.home()) + '/.save_song/auth.txt'
+auth_keys_path = str('../auth.txt')
 
 api_url = 'https://api.spotify.com/v1/'
 authorize_access_url = 'https://accounts.spotify.com/authorize/'
