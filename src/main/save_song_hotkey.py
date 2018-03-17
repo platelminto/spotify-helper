@@ -13,8 +13,17 @@ if current_os == 'Linux':
 
     import dbus
 
+if current_os == 'Windows':
+
+    import win10toast.ToastNotifier
+
 notif_icon_path = os.path.abspath('../resources/spotify.png')
 notif_duration_ms = 3100
+
+
+def windows_notify(title, text, icon_path, duration):
+    toaster = win10toast.ToastNotifier()
+    toaster.show_toast(title, text, icon_path=icon_path, duration=duration)
 
 
 def apple_notify(title, text):
