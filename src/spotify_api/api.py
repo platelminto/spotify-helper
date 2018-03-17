@@ -3,19 +3,17 @@ import time
 import webbrowser
 import base64
 import json
-from json.decoder import JSONDecodeError
-from pathlib import Path
-
-auth_keys_path = str(Path.home()) + '/.save_song/auth.txt'
-
-api_url = 'https://api.spotify.com/v1/'
-authorize_access_url = 'https://accounts.spotify.com/authorize/'
-get_token_url = 'https://accounts.spotify.com/api/token'
 
 
 class SpotifyApi(object):
 
     def __init__(self, scope_list, client_id, client_secret, redirect_uri):
+
+        self.auth_keys_path = str('../auth.txt')
+
+        self.api_url = 'https://api.spotify.com/v1/'
+        self.authorize_access_url = 'https://accounts.spotify.com/authorize/'
+        self.get_token_url = 'https://accounts.spotify.com/api/token'
 
         self.scope_list = scope_list
         self.client_id = client_id
@@ -23,13 +21,13 @@ class SpotifyApi(object):
         self.redirect_uri = redirect_uri
 
         try:
-            file = open(auth_keys_path, 'r+')
+            file = open(self.auth_keys_path, 'r+')
             self.load_auth_values(file)
 
             self.check_for_refresh_token(file, self.expiry_time)
 
         except (FileNotFoundError, ValueError):
-            file = open(auth_keys_path, 'w+')
+            file = open(self.auth_keys_path, 'w+')
             current_time = time.time()
             info = self.get_access_info(self.get_auth_code())
 
@@ -49,7 +47,7 @@ class SpotifyApi(object):
         params = {'client_id': self.client_id, 'response_type': 'code', 'redirect_uri': self.redirect_uri,
                   'scope': ' '.join(self.scope_list)}
 
-        r = requests.get(authorize_access_url, params=params)
+        r = requests.get(self.authorize_access_url, params=params)
 
         webbrowser.open_new(r.url)
 
@@ -61,7 +59,7 @@ class SpotifyApi(object):
                    'redirect_uri': self.redirect_uri, 'client_id': self.client_id,
                    'client_secret': self.client_secret}
 
-        r = requests.post(get_token_url, data=payload)
+        r = requests.post(self.get_token_url, data=payload)
 
         return r.json()
 
@@ -74,7 +72,7 @@ class SpotifyApi(object):
 
         obtained_time = time.time()
 
-        r = requests.post(get_token_url, data=payload, headers=headers)
+        r = requests.post(self.get_token_url, data=payload, headers=headers)
 
         info = r.json()
 
@@ -107,7 +105,7 @@ class SpotifyApi(object):
 
     def get_access_header(self):
 
-        file = open(auth_keys_path, 'r+')
+        file = open(self.auth_keys_path, 'r+')
 
         self.check_for_refresh_token(file, self.expiry_time)
 
@@ -117,36 +115,24 @@ class SpotifyApi(object):
 
     def get(self, endpoint, params=None):
 
-        r = requests.get(api_url + endpoint, params=params, headers=self.get_access_header())
+        r = requests.get(self.api_url + endpoint, params=params, headers=self.get_access_header())
 
-        try:
-            return r.json()
-        except JSONDecodeError:
-            return r
+        return r
 
     def post(self, endpoint, payload=None):
 
-        r = requests.post(api_url + endpoint, data=json.dumps(payload), headers=self.get_access_header())
+        r = requests.post(self.api_url + endpoint, data=json.dumps(payload), headers=self.get_access_header())
 
-        try:
-            return r.json()
-        except JSONDecodeError:
-            return r
+        return r
 
     def put(self, endpoint, data=None):
 
-        r = requests.put(api_url + endpoint, data=json.dumps(data), headers=self.get_access_header())
+        r = requests.put(self.api_url + endpoint, data=json.dumps(data), headers=self.get_access_header())
 
-        try:
-            return r.json()
-        except JSONDecodeError:
-            return r
+        return r
 
     def delete(self, endpoint, payload=None):
 
-        r = requests.delete(api_url + endpoint, headers=self.get_access_header(), data=json.dumps(payload))
+        r = requests.delete(self.api_url + endpoint, headers=self.get_access_header(), data=json.dumps(payload))
 
-        try:
-            return r.json()
-        except JSONDecodeError:
-            return r
+        return r
