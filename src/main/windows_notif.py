@@ -2,7 +2,7 @@ from win32api import *
 from win32gui import *
 import win32con
 import time
-
+import random
 
 class WindowsBalloonTip:
 
@@ -12,7 +12,7 @@ class WindowsBalloonTip:
         # Register the Window class.
         wc = WNDCLASS()
         hinst = wc.hInstance = GetModuleHandle(None)
-        wc.lpszClassName = "PythonTaskbar"
+        wc.lpszClassName = "PythonTaskbar" + str(random.randint(0, 10000))
         wc.lpfnWndProc = message_map  # could also specify a wndproc.
         class_atom = RegisterClass(wc)
         # Create the Window.
@@ -33,7 +33,7 @@ class WindowsBalloonTip:
         Shell_NotifyIcon(NIM_ADD, nid)
         Shell_NotifyIcon(NIM_MODIFY,
                          (self.hwnd, 0, NIF_INFO, win32con.WM_USER + 20,
-                          hicon, "Balloon  tooltip", msg, 200, title))
+                          hicon, "save-song-spotify", msg, 200, title))
         time.sleep(duration / 1000)
         DestroyWindow(self.hwnd)
         UnregisterClass(class_atom, hinst)
