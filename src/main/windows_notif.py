@@ -43,5 +43,5 @@ class WindowsBalloonTip:
         nid = (self.hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, nid)
 
-def balloon_tip(title, msg):
-    w=WindowsBalloonTip(title, msg)
+def balloon_tip(title, msg, icon_path, duration):
+    w=WindowsBalloonTip(title, msg, icon_path, duration)
