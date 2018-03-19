@@ -1,0 +1,2 @@
+monthly_playlist=True
+key_combo=ctrl+f8

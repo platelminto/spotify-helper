@@ -3,7 +3,7 @@ import sys
 import platform
 import time
 
-from pynput.keyboard import Key, Listener
+from pynput.keyboard import Key, Listener, KeyCode
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 current_os = platform.system()
@@ -20,6 +20,8 @@ if current_os == 'Windows':
 
 notif_icon_path = os.path.abspath('../resources/spotify.ico')
 notif_duration_ms = 3100
+
+options_file = '../options.txt'
 
 
 def windows_notify(title, text, icon_path, duration):
@@ -90,10 +92,56 @@ def send_notif(title, text):
         windows_notify(title, text, notif_icon_path, notif_duration_ms)
 
 
-def on_press(key):
-    if key == Key.f8:
-        save_song()
+class Keyboard(object):
+
+    @staticmethod
+    def get_key_from_string(key_str):
+
+        try:
+            return getattr(Key, key_str)
+        except AttributeError:
+            return KeyCode.from_char(key_str)
+
+    @staticmethod
+    def is_not_char(key):
+        return isinstance(key, Key)
+
+    @staticmethod
+    def read_combo_from_file(file):
+
+        with open(file) as file:
+
+            line = file.readline()
+            while not line.startswith('key_combo'):
+                line = file.readline().rstrip()
+
+            return line.split('=')[1].split('+')
+
+    def __init__(self):
+        self.currently_pressed_keys = set()
+        self.has_saved = False
+
+        self.looking_for = set()
+
+        for key_str in Keyboard.read_combo_from_file(options_file):
+            self.looking_for.add(self.get_key_from_string(key_str))
+
+    def on_press(self, key):
+
+        self.currently_pressed_keys.add(key)
+
+        if self.looking_for == self.currently_pressed_keys and self.has_saved is False:
+            save_song()
+            self.has_saved = True
+
+    def on_release(self, key):
+        if Keyboard.is_not_char(key):
+            self.currently_pressed_keys.remove(key)
+
+        self.has_saved = False
 
 
-with Listener(on_press=on_press) as listener:
+keyboard = Keyboard()
+
+with Listener(on_press=keyboard.on_press, on_release=keyboard.on_release) as listener:
     listener.join()
