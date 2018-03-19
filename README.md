@@ -8,10 +8,11 @@ On first run, a browser window should open and the url should point to localhost
 Enabling the `'monthly_playlist'` option in `options.txt` also adds saved songs to a monthly playlist (for example, 'March 2018'), and creates one if there isn't one available.
 
 ### Dependencies
+#### General
 
 - [Requests](http://docs.python-requests.org/en/master/)
 - [pynput](https://pythonhosted.org/pynput/)
 
-### Windows
+#### Windows
 
 - [pywin32](https://pypi.python.org/pypi/pywin32)
