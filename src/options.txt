@@ -1,2 +1,2 @@
 monthly_playlist=no
-key_combo=ctrl+f8
+key_combo=ctrl_l+f8

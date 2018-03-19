@@ -1,7 +1,6 @@
 import os
 import sys
 import platform
-import time
 
 from pynput.keyboard import Key, Listener, KeyCode
 
@@ -16,7 +15,7 @@ if current_os == 'Linux':
 
 if current_os == 'Windows':
 
-    from win10toast import ToastNotifier
+    from plyer import notification
 
 options_file = '../options.txt'
 
@@ -44,10 +43,7 @@ else:
 
 
 def windows_notify(title, text, icon_path, duration):
-    toaster = ToastNotifier()
-    toaster.show_toast(title, text, icon_path=icon_path, duration=(duration/1000)-1, threaded=True)
-    while toaster.notification_active():
-        time.sleep(0.1)
+    notification.notify(title, text, 'spotify-easy-save-song', icon_path, duration)
 
 
 def apple_notify(title, text):
