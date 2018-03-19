@@ -4,6 +4,7 @@ import win32con
 import time
 import random
 
+
 class WindowsBalloonTip:
 
     def __init__(self, title, msg, icon_path, duration):

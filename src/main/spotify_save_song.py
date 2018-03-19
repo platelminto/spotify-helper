@@ -49,6 +49,7 @@ def windows_notify(title, text, icon_path, duration):
     t.daemon = True
     t.start()
 
+
 def apple_notify(title, text):
     os.system("""
               osascript -e 'display notification "{}" with title "{}"'
