@@ -125,7 +125,6 @@ class Keyboard(object):
 
     def __init__(self):
         self.currently_pressed_keys = set()
-        self.has_saved = False
 
         self.looking_for = set()
 
@@ -136,15 +135,13 @@ class Keyboard(object):
 
         self.currently_pressed_keys.add(key)
 
-        if self.looking_for == self.currently_pressed_keys and self.has_saved is False:
+        if self.looking_for == self.currently_pressed_keys:
             save_song()
-            self.has_saved = True
+            self.currently_pressed_keys.clear()
 
     def on_release(self, key):
         if Keyboard.is_not_char(key):
             self.currently_pressed_keys.remove(key)
-
-        self.has_saved = False
 
 
 keyboard = Keyboard()
