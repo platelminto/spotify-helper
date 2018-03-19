@@ -6,3 +6,4 @@ src/**/keys.txt
 .idea/
 bin/
 src/*.txt
+!src/options.txt
