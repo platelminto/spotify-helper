@@ -8,7 +8,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 current_os = platform.system()
 
 import spotify_api.spotify as spotify
-import main.windows_notif as windows_notif
 
 if current_os == 'Linux':
 
@@ -17,6 +16,7 @@ if current_os == 'Linux':
 if current_os == 'Windows':
 
     import threading
+    import main.windows_notif as windows_notif
 
 options_file = '../options.txt'
 
