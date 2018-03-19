@@ -8,6 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 current_os = platform.system()
 
 import spotify_api.spotify as spotify
+import main.windows_notif as windows_notif
 
 if current_os == 'Linux':
 
@@ -16,6 +17,7 @@ if current_os == 'Linux':
 if current_os == 'Windows':
 
     from plyer import notification
+    import threading
 
 options_file = '../options.txt'
 
@@ -43,8 +45,10 @@ else:
 
 
 def windows_notify(title, text, icon_path, duration):
-    notification.notify(title, text, 'spotify-easy-save-song', icon_path, duration)
-
+    t = threading.Thread(target=windows_notif.balloon_tip, args =
+                         (title,text,icon_path, duration))
+    t.daemon = True
+    t.start()
 
 def apple_notify(title, text):
     os.system("""
@@ -59,7 +63,7 @@ def linux_notify(title, text, icon_path, duration):
     notify = bus.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
     method = notify.get_dbus_method('Notify', 'org.freedesktop.Notifications')
 
-    method("easy-save-song-spotify", 24, icon_path, title, text, [], [], duration)
+    method("save-song-spotify", 24, icon_path, title, text, [], [], duration)
 
 
 def save_song():
