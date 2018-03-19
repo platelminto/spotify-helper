@@ -132,7 +132,6 @@ class Keyboard(object):
             self.looking_for.add(self.get_key_from_string(key_str))
 
     def on_press(self, key):
-
         self.currently_pressed_keys.add(key)
 
         if self.looking_for == self.currently_pressed_keys:
@@ -140,8 +139,10 @@ class Keyboard(object):
             self.currently_pressed_keys.clear()
 
     def on_release(self, key):
-        if Keyboard.is_not_char(key):
+        try:
             self.currently_pressed_keys.remove(key)
+        except KeyError:
+            pass
 
 
 keyboard = Keyboard()
