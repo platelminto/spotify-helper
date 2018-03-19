@@ -1,13 +1,7 @@
-import os
-import sys
-
 from pynput.keyboard import Listener
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import spotify_api.spotify as spotify
-import main.notif_handler as notif
-from main.keyboard import Keyboard
+from main import keyboard_handler, notif_handler
 
 options_file = '../options.txt'
 
@@ -40,16 +34,16 @@ def save_song():
 
         if monthly_playlist:
             spotify.remove_song_from_monthly_playlist('spotify:track:' + song_id)
-        notif.make_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
+        notif_handler.make_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
 
     else:
 
         if monthly_playlist:
             spotify.add_songs_to_monthly_playlist('spotify:track:' + song_id)
-        notif.make_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
+        notif_handler.make_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
 
 
-keyboard = Keyboard()
+keyboard = keyboard_handler.KeyboardHandler()
 
 with Listener(on_press=keyboard.on_press, on_release=keyboard.on_release) as listener:
     listener.join()

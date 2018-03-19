@@ -7,11 +7,11 @@ import base64
 import json
 
 
-class SpotifyApi(object):
+class SpotifyApi:
 
     def __init__(self, scope_list, client_id, client_secret, redirect_uri):
 
-        self.auth_keys_path = str('../auth.txt')
+        self.auth_keys_path = '../auth.txt'
 
         self.api_url = 'https://api.spotify.com/v1/'
         self.authorize_access_url = 'https://accounts.spotify.com/authorize/'
