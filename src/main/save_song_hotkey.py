@@ -18,10 +18,29 @@ if current_os == 'Windows':
 
     from win10toast import ToastNotifier
 
+options_file = '../options.txt'
+
 notif_icon_path = os.path.abspath('../resources/spotify.ico')
 notif_duration_ms = 3100
 
-options_file = '../options.txt'
+
+def read_option(option):
+
+    with open(options_file) as file:
+
+        line = file.readline().rstrip()
+        while not line.startswith(option):
+            line = file.readline().rstrip()
+
+        return line.split('=')[1]
+
+
+monthly_playlist = read_option('monthly_playlist')
+
+if monthly_playlist == 'yes':
+    monthly_playlist = True
+else:
+    monthly_playlist = False
 
 
 def windows_notify(title, text, icon_path, duration):
@@ -54,12 +73,14 @@ def save_song():
 
     if is_saved:
 
-        spotify.remove_song_from_monthly_playlist('spotify:track:' + song_id)
+        if monthly_playlist:
+            spotify.remove_song_from_monthly_playlist('spotify:track:' + song_id)
         make_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
 
     else:
 
-        spotify.add_songs_to_monthly_playlist('spotify:track:' + song_id)
+        if monthly_playlist:
+            spotify.add_songs_to_monthly_playlist('spotify:track:' + song_id)
         make_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
 
 
@@ -106,24 +127,13 @@ class Keyboard(object):
     def is_not_char(key):
         return isinstance(key, Key)
 
-    @staticmethod
-    def read_combo_from_file(file):
-
-        with open(file) as file:
-
-            line = file.readline()
-            while not line.startswith('key_combo'):
-                line = file.readline().rstrip()
-
-            return line.split('=')[1].split('+')
-
     def __init__(self):
         self.currently_pressed_keys = set()
         self.has_saved = False
 
         self.looking_for = set()
 
-        for key_str in Keyboard.read_combo_from_file(options_file):
+        for key_str in read_option('key_combo').split('+'):
             self.looking_for.add(self.get_key_from_string(key_str))
 
     def on_press(self, key):
