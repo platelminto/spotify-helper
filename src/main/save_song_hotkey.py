@@ -16,7 +16,6 @@ if current_os == 'Linux':
 
 if current_os == 'Windows':
 
-    from plyer import notification
     import threading
 
 options_file = '../options.txt'
@@ -46,7 +45,7 @@ else:
 
 def windows_notify(title, text, icon_path, duration):
     t = threading.Thread(target=windows_notif.balloon_tip, args =
-                         (title,text,icon_path, duration))
+                         (title, text, icon_path, duration))
     t.daemon = True
     t.start()
 
