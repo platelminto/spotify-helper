@@ -1,4 +1,10 @@
+import sys
+
+import os
+
 from pynput.keyboard import Key, KeyCode, Listener
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from main.save_song import SpotifySaveSong
 
