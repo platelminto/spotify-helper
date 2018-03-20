@@ -1,6 +1,6 @@
 from pynput.keyboard import Key, KeyCode, Listener
 
-from main.spotify_save_song import SpotifySaveSong
+from main.save_song import SpotifySaveSong
 
 options_file = '../options.txt'
 
