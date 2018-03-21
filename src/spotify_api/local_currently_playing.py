@@ -24,10 +24,10 @@ def get_track_id_linux():
         spotify_properties = dbus.Interface(spotify_bus,
                                             "org.freedesktop.DBus.Properties")
         metadata = spotify_properties.Get("org.mpris.MediaPlayer2.Player", "Metadata")
-    except DBusException:
+    except dbus.DBusException:
         raise ModuleNotFoundError
 
-    return metadata.get('mpris:trackid')
+    return metadata.get('mpris:trackid').split(':')[-1]
 
 
 def get_track_id_mac():
