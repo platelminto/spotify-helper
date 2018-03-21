@@ -24,7 +24,7 @@ api = SpotifyApi(scope_list=scope_list, client_id=client_id,
 
 
 def fetch_user_id():
-    return api.get('me').get('id')
+    return api.get('me').json().get('id')
 
 
 def monthly_playlist_id():
@@ -41,7 +41,7 @@ def monthly_playlist_id():
                 return playlist_id
 
         file.close()
-
+        
         raise ValueError
 
     except (FileNotFoundError, ValueError):
@@ -59,7 +59,10 @@ def monthly_playlist_id():
 def get_user_id():
     try:
         with open('../user_id.txt', 'r') as user_id:
-            return user_id.readline()
+            line = user_id.readline()
+            if line == '':
+                raise FileNotFoundError
+            return line
     except FileNotFoundError:
 
         with open('../user_id.txt', 'w+') as user_id:
@@ -69,7 +72,7 @@ def get_user_id():
 
 
 def fetch_playlist_id(month, year):
-    response = api.get('me/playlists', params={'limit': '10'})
+    response = api.get('me/playlists', params={'limit': '10'}).json()
 
     for playlist in response.get('items'):
 
@@ -77,7 +80,7 @@ def fetch_playlist_id(month, year):
             return playlist.get('id')
 
     return api.post('users/' + get_user_id() + '/playlists',
-                    payload={'name': (month.capitalize() + ' ' + year)}).get('id')
+                    payload={'name': (month.capitalize() + ' ' + year)}).json().get('id')
 
 
 def add_songs_to_monthly_playlist(*song_ids):
@@ -101,14 +104,19 @@ def currently_playing_id():
         return dbus.get_track_id().split(':')[-1]
     except (ImportError, DBusException):
         try:
-            return api.get('me/player/currently-playing').get('item').get('id')
+            response = api.get('me/player/currently-playing')
+
+            if response.status_code == 204:
+                send_notif('Error', 'No song currently playing')
+            else:
+                return response.json().get('item').get('id')
         except AttributeError:
-            send_notif('Error', 'No song currently playing')
+            send_notif('Error', '')
             return None
 
 
 def is_saved(song_id):
-    return api.get('me/tracks/contains?ids=' + song_id)[0]
+    return api.get('me/tracks/contains?ids=' + song_id).json()[0]
 
 
 def remove_songs_from_library(*song_ids):

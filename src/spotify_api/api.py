@@ -23,20 +23,25 @@ class SpotifyApi:
         self.redirect_uri = redirect_uri
 
         try:
-            file = open(self.auth_keys_path, 'r+')
-            self.load_auth_values(file)
+            self.file = open(self.auth_keys_path, 'r+')
 
-            self.check_for_refresh_token(file, self.expiry_time)
+            self.load_auth_values(self.file)
+
+            self.check_for_refresh_token(self.file, self.expiry_time)
 
         except (FileNotFoundError, ValueError):
-            file = open(self.auth_keys_path, 'w+')
-            current_time = time.time()
-            info = self.get_access_info(self.get_auth_code())
+            self.write_auth_info()
 
-            self.save_auth_values(file, info.get('access_token'), info.get('refresh_token'),
-                                  current_time + info.get('expires_in'))
+        self.file.close()
 
-        file.close()
+    def write_auth_info(self):
+
+        self.file = open(self.auth_keys_path, 'w+')
+        current_time = time.time()
+        info = self.get_access_info(self.get_auth_code())
+
+        self.save_auth_values(self.file, info.get('access_token'), info.get('refresh_token'),
+                          current_time + info.get('expires_in'))
 
     def check_for_refresh_token(self, file, expiry_time):
 
@@ -78,8 +83,10 @@ class SpotifyApi:
 
         info = r.json()
 
-        if 'refresh_token' in info:
+        if r.status_code == 401:
+            self.write_auth_info()
 
+        if 'refresh_token' in info:
             self.refresh_token = info.get('refresh_token')
 
         self.save_auth_values(file, info.get('access_token'), self.refresh_token,
@@ -116,29 +123,21 @@ class SpotifyApi:
 
         return {'Authorization': 'Bearer ' + self.access_token}
 
-    def check_status_code(self, r):
+    @staticmethod
+    def check_status_code(r):
         code = r.status_code
 
         if code > 300:
             print(code)
-            if code == 400:
-                print('Malformed request')
-            elif code == 401:
-                print('Refreshing tokens, try again')
-                with open(self.auth_keys_path, 'w+') as file:
-                    self.refresh_tokens(file)
             return None
 
-        else:
-            try:
-                return r.json()
-            except JSONDecodeError:
-                return r
+        return r
 
     def get(self, endpoint, params=None):
 
         r = self.check_status_code(requests.get(self.api_url + endpoint,
                                                 params=params, headers=self.get_access_header()))
+
         return r
 
     def post(self, endpoint, payload=None):
