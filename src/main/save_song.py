@@ -31,7 +31,6 @@ class SpotifySaveSong:
 
     def save_song(self):
         song_id = spotify.currently_playing_id()
-        print(song_id)
 
         if song_id:
 
