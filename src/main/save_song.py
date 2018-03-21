@@ -31,18 +31,21 @@ class SpotifySaveSong:
 
     def save_song(self):
         song_id = spotify.currently_playing_id()
+        print(song_id)
 
-        is_saved = spotify.is_saved(song_id)
+        if song_id:
 
-        if is_saved:
+            is_saved = spotify.is_saved(song_id)
 
-            if self.monthly_playlist:
-                spotify.remove_song_from_monthly_playlist('spotify:track:' + song_id)
-            notif_handler.make_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
+            if is_saved:
 
-        else:
+                if self.monthly_playlist:
+                    spotify.remove_song_from_monthly_playlist('spotify:track:' + song_id)
+                notif_handler.make_notif(spotify.remove_songs_from_library(song_id), 'removed from', 'remove from')
 
-            if self.monthly_playlist:
-                spotify.add_songs_to_monthly_playlist('spotify:track:' + song_id)
-            notif_handler.make_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
+            else:
+
+                if self.monthly_playlist:
+                    spotify.add_songs_to_monthly_playlist('spotify:track:' + song_id)
+                notif_handler.make_notif(spotify.add_songs_to_library(song_id), 'added to', 'add to')
 

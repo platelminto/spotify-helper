@@ -2,6 +2,9 @@ from spotify_api.api import SpotifyApi
 
 import datetime
 
+from spotify_api.dbus_handler import DbusHandler
+from main.notif_handler import send_notif
+
 if __name__ == '__main__':
     pass
 
@@ -92,7 +95,16 @@ def add_songs_to_library(*song_ids):
 
 
 def currently_playing_id():
-    return api.get('me/player/currently-playing').get('item').get('id')
+    try:
+        from dbus import DBusException
+        dbus = DbusHandler()
+        return dbus.get_track_id().split(':')[-1]
+    except (ImportError, DBusException):
+        try:
+            return api.get('me/player/currently-playing').get('item').get('id')
+        except AttributeError:
+            send_notif('Error', 'No song currently playing')
+            return None
 
 
 def is_saved(song_id):

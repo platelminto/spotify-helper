@@ -10,41 +10,38 @@ from main.save_song import SpotifySaveSong
 
 options_file = '../options.txt'
 
+spotify_save_song = SpotifySaveSong()
 
-class KeyboardHandler:
-
-    def __init__(self):
-        self.spotify_save_song = SpotifySaveSong()
-
-        self.currently_pressed_keys = set()
-        self.looking_for = set()
-
-        for key_str in SpotifySaveSong.read_option('key_combo').split('+'):
-            self.looking_for.add(self.get_key_from_string(key_str))
-
-    @staticmethod
-    def get_key_from_string(key_str):
-
-        try:
-            return getattr(Key, key_str)
-        except AttributeError:
-            return KeyCode.from_char(key_str)
-
-    def on_press(self, key):
-        self.currently_pressed_keys.add(key)
-
-        if self.looking_for == self.currently_pressed_keys:
-            self.spotify_save_song.save_song()
-            self.currently_pressed_keys.clear()
-
-    def on_release(self, key):
-        try:
-            self.currently_pressed_keys.remove(key)
-        except KeyError:
-            pass
+currently_pressed_keys = set()
+looking_for = set()
 
 
-keyboard = KeyboardHandler()
+def get_key_from_string(key_str):
 
-with Listener(on_press=keyboard.on_press, on_release=keyboard.on_release) as listener:
+    try:
+        return getattr(Key, key_str)
+    except AttributeError:
+        return KeyCode.from_char(key_str)
+
+
+def on_press(key):
+    currently_pressed_keys.add(key)
+
+    if looking_for == currently_pressed_keys:
+        spotify_save_song.save_song()
+        currently_pressed_keys.clear()
+
+
+def on_release(key):
+    try:
+        currently_pressed_keys.remove(key)
+    except KeyError:
+        pass
+
+
+for key_str in SpotifySaveSong.read_option('key_combo').split('+'):
+    looking_for.add(get_key_from_string(key_str))
+
+
+with Listener(on_press=on_press, on_release=on_release) as listener:
     listener.join()
