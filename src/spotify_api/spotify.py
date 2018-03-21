@@ -2,7 +2,7 @@ from spotify_api.api import SpotifyApi
 
 import datetime
 
-from spotify_api.dbus_handler import DbusHandler
+from spotify_api.dbus_handler import DBusHandler
 from main.notif_handler import send_notif
 
 if __name__ == '__main__':
@@ -99,10 +99,9 @@ def add_songs_to_library(*song_ids):
 
 def currently_playing_id():
     try:
-        from dbus import DBusException
-        dbus = DbusHandler()
+        dbus = DBusHandler()
         return dbus.get_track_id().split(':')[-1]
-    except (ImportError, DBusException):
+    except ModuleNotFoundError:
         try:
             response = api.get('me/player/currently-playing')
 
