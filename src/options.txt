@@ -1,2 +1,8 @@
 monthly_playlist=no
-key_combo=ctrl_l+f8
+save=ctrl_l+f8
+save_playlist=ctrl_l+f8
+next=
+previous=
+pause=
+playpause=
+play=

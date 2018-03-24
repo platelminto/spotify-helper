@@ -2,8 +2,8 @@ import datetime
 import platform
 
 from main.notif_handler import send_notif
-from spotify_api.api import SpotifyApi
-from spotify_api.local_currently_playing import get_track_id
+from spotify_api.web_api import WebApi
+from spotify_api.dbus_api import get_track_id
 
 
 class Spotify:
@@ -24,8 +24,8 @@ class Spotify:
         scope_list = ['user-library-read', 'user-library-modify', 'user-read-currently-playing',
                       'playlist-modify-public']
 
-        self.api = SpotifyApi(scope_list=scope_list, client_id=client_id,
-                              client_secret=client_secret, redirect_uri=redirect_uri)
+        self.api = WebApi(scope_list=scope_list, client_id=client_id,
+                          client_secret=client_secret, redirect_uri=redirect_uri)
 
     def fetch_user_id(self):
         return self.api.get('me').json().get('id')

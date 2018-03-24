@@ -1,5 +1,3 @@
-from json import JSONDecodeError
-
 import requests
 import time
 import webbrowser
@@ -7,7 +5,7 @@ import base64
 import json
 
 
-class SpotifyApi:
+class WebApi:
 
     def __init__(self, scope_list, client_id, client_secret, redirect_uri):
 
