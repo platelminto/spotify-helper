@@ -39,12 +39,11 @@ class WebApi:
         info = self.get_access_info(self.get_auth_code())
 
         self.save_auth_values(self.file, info.get('access_token'), info.get('refresh_token'),
-                          current_time + info.get('expires_in'))
+                              current_time + info.get('expires_in'))
 
     def check_for_refresh_token(self, file, expiry_time):
 
         if time.time() > expiry_time:
-
             self.refresh_tokens(file)
 
     def get_auth_code(self):

@@ -1,8 +1,1 @@
-monthly_playlist=no
-save=ctrl_l+f8
-save_playlist=ctrl_l+f8
-next=
-previous=
-pause=
-playpause=
-play=
+playlist=

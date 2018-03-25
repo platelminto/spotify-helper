@@ -9,18 +9,14 @@ class DBusApi:
         self.current_os = platform.system()
         self.player = 'org.mpris.MediaPlayer2.Player'
 
-        try:
-            session_bus = dbus.SessionBus()
-            self.spotify_bus = session_bus.get_object('org.mpris.MediaPlayer2.spotify',
-                                                      '/org/mpris/MediaPlayer2')
-            self.spotify_properties = dbus.Interface(self.spotify_bus,
-                                                     'org.freedesktop.DBus.Properties')
-            self.metadata = self.spotify_properties.Get(self.player, 'Metadata')
+        session_bus = dbus.SessionBus()
+        self.spotify_bus = session_bus.get_object('org.mpris.MediaPlayer2.spotify',
+                                                  '/org/mpris/MediaPlayer2')
+        self.spotify_properties = dbus.Interface(self.spotify_bus,
+                                                 'org.freedesktop.DBus.Properties')
+        self.metadata = self.spotify_properties.Get(self.player, 'Metadata')
 
-            self.interface = dbus.Interface(self.spotify_bus, self.player)
-
-        except dbus.DBusException:
-            raise ModuleNotFoundError
+        self.interface = dbus.Interface(self.spotify_bus, self.player)
 
     # Spotify doesn't support the majority of available properties
     def get_property(self, player_propety):
@@ -77,9 +73,3 @@ class DBusApi:
     def open(self, uri):
 
         return self.run_method('OpenUri', uri)
-
-
-api = DBusApi()
-
-print(api.open('spotify:track:7xS4k6wGyVlwE78VUyJyMg'))
-

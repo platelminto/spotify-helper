@@ -13,25 +13,10 @@ options_file = '../options.txt'
 class SpotifySaveSong:
 
     def __init__(self):
-        self.monthly_playlist = SpotifySaveSong.read_option('monthly_playlist')
-
-        if self.monthly_playlist == 'yes':
-            self.monthly_playlist = True
-        else:
-            self.monthly_playlist = False
 
         self.spotify = Spotify()
 
-    @staticmethod
-    def read_option(option):
-        with open(options_file) as file:
-            line = file.readline().rstrip()
-            while not line.startswith(option):
-                line = file.readline().rstrip()
-
-            return line.split('=')[1]
-
-    def save_song(self):
+    def save(self):
         song_id = self.spotify.currently_playing_id()
 
         if song_id:
@@ -40,13 +25,33 @@ class SpotifySaveSong:
 
             if is_saved:
 
-                if self.monthly_playlist:
-                    self.spotify.remove_song_from_monthly_playlist('spotify:track:' + song_id)
                 notif_handler.make_notif(self.spotify.remove_songs_from_library(song_id),
                                          'removed from', 'remove from')
 
             else:
 
-                if self.monthly_playlist:
-                    self.spotify.add_songs_to_monthly_playlist('spotify:track:' + song_id)
                 notif_handler.make_notif(self.spotify.add_songs_to_library(song_id), 'added to', 'add to')
+
+    def save_playlist(self):
+        pass
+
+    def next(self):
+        self.spotify.next_song()
+
+    def previous(self):
+        pass
+
+    def pause(self):
+        pass
+
+    def toggle_play(self):
+        pass
+
+    def play(self):
+        pass
+
+    def toggle_repeat(self):
+        pass
+
+    def toggle_shuffle(self):
+        pass
