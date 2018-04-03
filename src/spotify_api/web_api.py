@@ -1,13 +1,19 @@
+import threading
+
 import requests
 import time
 import webbrowser
 import base64
 import json
 
+from requests.exceptions import ReadTimeout
+
 
 class WebApi:
 
     def __init__(self, scope_list, client_id, client_secret, redirect_uri):
+
+        self.online = True
 
         self.auth_keys_path = '../auth.txt'
 
@@ -30,6 +36,10 @@ class WebApi:
         except (FileNotFoundError, ValueError):
             self.write_auth_info()
 
+        t = threading.Thread(target=self.check_online)
+        t.daemon = True
+        t.start()
+
         self.file.close()
 
     def write_auth_info(self):
@@ -43,7 +53,7 @@ class WebApi:
 
     def check_for_refresh_token(self, file, expiry_time):
 
-        if time.time() > expiry_time:
+        if time.time() > expiry_time and self.online:
             self.refresh_tokens(file)
 
     def get_auth_code(self):
@@ -67,6 +77,14 @@ class WebApi:
 
         return r.json()
 
+    def check_online(self):
+
+        while True:
+            time.sleep(10)
+
+            if not self.online:
+                self.refresh_tokens(self.file)
+
     def refresh_tokens(self, file):
 
         payload = {'grant_type': 'refresh_token', 'refresh_token': self.refresh_token}
@@ -76,7 +94,15 @@ class WebApi:
 
         obtained_time = time.time()
 
-        r = requests.post(self.get_token_url, data=payload, headers=headers)
+        try:
+
+            r = requests.post(self.get_token_url, data=payload, headers=headers, timeout=4)
+            self.online = True
+
+        except ReadTimeout:
+
+            self.online = False
+            return
 
         info = r.json()
 
@@ -130,27 +156,31 @@ class WebApi:
 
         return r
 
-    def get(self, endpoint, params=None):
+    def get(self, endpoint, params=None, timeout=None):
 
         r = self.check_status_code(requests.get(self.api_url + endpoint,
-                                                params=params, headers=self.get_access_header()))
+                                                params=params, headers=self.get_access_header(),
+                                                timeout=timeout))
 
         return r
 
-    def post(self, endpoint, payload=None):
+    def post(self, endpoint, payload=None, timeout=None):
 
         r = self.check_status_code(requests.post(self.api_url + endpoint,
-                                                 data=json.dumps(payload), headers=self.get_access_header()))
+                                                 data=json.dumps(payload), headers=self.get_access_header(),
+                                                 timeout=timeout))
         return r
 
-    def put(self, endpoint, data=None):
+    def put(self, endpoint, data=None, timeout=None):
 
         r = self.check_status_code(requests.put(self.api_url + endpoint,
-                                                data=json.dumps(data), headers=self.get_access_header()))
+                                                data=json.dumps(data), headers=self.get_access_header(),
+                                                timeout=timeout))
         return r
 
-    def delete(self, endpoint, payload=None):
+    def delete(self, endpoint, payload=None, timeout=None):
 
         r = self.check_status_code(requests.delete(self.api_url + endpoint,
-                                                   headers=self.get_access_header(), data=json.dumps(payload)))
+                                                   headers=self.get_access_header(), data=json.dumps(payload),
+                                                   timeout=timeout))
         return r

@@ -6,12 +6,12 @@ from pynput.keyboard import Key, KeyCode, Listener
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from main.save_song import SpotifySaveSong
+from spotify_api.spotify import Spotify
 
 options_file = '../options.txt'
 bindings_file = '../bindings.txt'
 
-spotify_save_song = SpotifySaveSong()
+spotify = Spotify()
 
 currently_pressed_keys = list()
 looking_for = {}
@@ -27,10 +27,12 @@ def get_key_from_string(key_str):
 
 def on_press(key):
     currently_pressed_keys.append(key)
+    print(currently_pressed_keys)
 
     for func_name, key_set in looking_for.items():
         if currently_pressed_keys == key_set:
-            getattr(spotify_save_song, func_name)()
+
+            getattr(spotify, func_name)()
             currently_pressed_keys.pop(-1)
 
 
