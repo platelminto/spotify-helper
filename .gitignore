@@ -7,3 +7,4 @@ src/**/keys.txt
 bin/
 src/*.txt
 !src/options.txt
+features.txt

@@ -1,12 +1,9 @@
-import threading
-
 import requests
 import time
 import webbrowser
 import base64
 import json
-
-from requests.exceptions import ReadTimeout
+import threading
 
 
 class WebApi:
@@ -26,29 +23,28 @@ class WebApi:
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
 
-        try:
-            self.file = open(self.auth_keys_path, 'r+')
+        with open(self.auth_keys_path, 'r+') as file:
+            try:
+                file = open(self.auth_keys_path, 'r+')
 
-            self.load_auth_values(self.file)
+                self.load_auth_values(file)
 
-            self.check_for_refresh_token(self.file, self.expiry_time)
+                self.check_for_refresh_token(file, self.expiry_time)
 
-        except (FileNotFoundError, ValueError):
-            self.write_auth_info()
+            except (FileNotFoundError, ValueError):
+                self.write_auth_info()
 
-        t = threading.Thread(target=self.check_online)
-        t.daemon = True
-        t.start()
-
-        self.file.close()
+            t = threading.Thread(target=self.check_online, args=(file,))
+            t.daemon = True
+            t.start()
 
     def write_auth_info(self):
 
-        self.file = open(self.auth_keys_path, 'w+')
+        file = open(self.auth_keys_path, 'w+')
         current_time = time.time()
         info = self.get_access_info(self.get_auth_code())
 
-        self.save_auth_values(self.file, info.get('access_token'), info.get('refresh_token'),
+        self.save_auth_values(file, info.get('access_token'), info.get('refresh_token'),
                               current_time + info.get('expires_in'))
 
     def check_for_refresh_token(self, file, expiry_time):
@@ -77,13 +73,13 @@ class WebApi:
 
         return r.json()
 
-    def check_online(self):
+    def check_online(self, file):
 
         while True:
             time.sleep(10)
 
             if not self.online:
-                self.refresh_tokens(self.file)
+                self.refresh_tokens(file)
 
     def refresh_tokens(self, file):
 
@@ -99,14 +95,18 @@ class WebApi:
             r = requests.post(self.get_token_url, data=payload, headers=headers, timeout=4)
             self.online = True
 
-        except ReadTimeout:
+        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
 
             self.online = False
             return
 
         info = r.json()
 
+        if not set(info.get('scope').split(' ')).issuperset(set(self.scope_list)):
+            self.write_auth_info()
+
         if r.status_code == 401:
+
             self.write_auth_info()
 
         if 'refresh_token' in info:
@@ -138,11 +138,9 @@ class WebApi:
 
     def get_access_header(self):
 
-        file = open(self.auth_keys_path, 'r+')
+        with open(self.auth_keys_path, 'r+') as file:
 
-        self.check_for_refresh_token(file, self.expiry_time)
-
-        file.close()
+            self.check_for_refresh_token(file, self.expiry_time)
 
         return {'Authorization': 'Bearer ' + self.access_token}
 
@@ -150,37 +148,72 @@ class WebApi:
     def check_status_code(r):
         code = r.status_code
 
-        if code > 300:
+        if code >= 300:
             print(code)
-            return None
+            print(r.json().get('error').get('message'))
+            return r
 
         return r
 
-    def get(self, endpoint, params=None, timeout=None):
+    def get(self, endpoint, params=None, timeout=4, retry=1):
 
-        r = self.check_status_code(requests.get(self.api_url + endpoint,
-                                                params=params, headers=self.get_access_header(),
-                                                timeout=timeout))
+        try:
+            return self.check_status_code(requests.get(self.api_url + endpoint,
+                                                       params=params, headers=self.get_access_header(),
+                                                       timeout=timeout))
+        except requests.exceptions.ConnectionError:
 
-        return r
+            if retry is not 0:
+                return self.get(endpoint, params, timeout, retry - 1)
+        except requests.exceptions.ReadTimeout:
+            pass
 
-    def post(self, endpoint, payload=None, timeout=None):
+        raise ConnectionError
 
-        r = self.check_status_code(requests.post(self.api_url + endpoint,
-                                                 data=json.dumps(payload), headers=self.get_access_header(),
-                                                 timeout=timeout))
-        return r
+    def post(self, endpoint, params=None, payload=None, timeout=4, retry=1):
 
-    def put(self, endpoint, data=None, timeout=None):
+        try:
+            return self.check_status_code(requests.post(self.api_url + endpoint,
+                                                        data=json.dumps(payload), params=params, headers=self.get_access_header(),
+                                                        timeout=timeout))
+        except requests.exceptions.ConnectionError:
 
-        r = self.check_status_code(requests.put(self.api_url + endpoint,
-                                                data=json.dumps(data), headers=self.get_access_header(),
-                                                timeout=timeout))
-        return r
+            if retry is not 0:
+                return self.get(endpoint, params, timeout, retry - 1)
 
-    def delete(self, endpoint, payload=None, timeout=None):
+        except requests.exceptions.ReadTimeout:
+            pass
 
-        r = self.check_status_code(requests.delete(self.api_url + endpoint,
-                                                   headers=self.get_access_header(), data=json.dumps(payload),
-                                                   timeout=timeout))
-        return r
+        raise ConnectionError
+
+    def put(self, endpoint, params=None, payload=None, timeout=4, retry=1):
+
+        try:
+            return self.check_status_code(requests.post(self.api_url + endpoint,
+                                                        data=json.dumps(payload), params=params, headers=self.get_access_header(),
+                                                        timeout=timeout))
+        except requests.exceptions.ConnectionError:
+
+            if retry is not 0:
+                return self.get(endpoint, params, timeout, retry - 1)
+
+        except requests.exceptions.ReadTimeout:
+            pass
+
+        raise ConnectionError
+
+    def delete(self, endpoint, params=None, payload=None, timeout=4, retry=1):
+
+        try:
+            return self.check_status_code(requests.post(self.api_url + endpoint,
+                                                        data=json.dumps(payload), params=params, headers=self.get_access_header(),
+                                                        timeout=timeout))
+        except requests.exceptions.ConnectionError:
+
+            if retry is not 0:
+                return self.get(endpoint, params, timeout, retry - 1)
+
+        except requests.exceptions.ReadTimeout:
+            pass
+
+        raise ConnectionError

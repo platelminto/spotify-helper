@@ -22,15 +22,15 @@ class Spotify:
 
         redirect_uri = 'http://localhost:8888/callback'
 
-        scope_list = ['user-library-read', 'user-library-modify', 'user-read-currently-playing',
-                      'playlist-modify-public', 'user-modify-playback-state']
+        scope_list = ['user-library-read', 'user-library-modify', 'playlist-modify-public',
+                      'user-modify-playback-state', 'user-read-playback-state']
 
         self.web_api = WebApi(scope_list=scope_list, client_id=client_id,
                               client_secret=client_secret, redirect_uri=redirect_uri)
         if self.current_os == 'Darwin':
             self.local_api = AppleScriptApi()
 
-        elif self.current_os == 'Linux':
+        elif self.current_os == 'Linx':
             self.local_api = DBusApi()
 
         self.repeat_states = ['track', 'context', 'off']
@@ -97,7 +97,7 @@ class Spotify:
                                    payload={'tracks': [{'uri': song_id}]})
 
     def add_songs_to_library(self, *song_ids):
-        return self.web_api.put('me/tracks', data={'ids': song_ids})
+        return self.web_api.put('me/tracks', payload={'ids': song_ids})
 
     def currently_playing_id(self):
         try:
@@ -105,15 +105,9 @@ class Spotify:
             return self.local_api.get_track_id()
 
         except AttributeError:
-            try:
-                response = self.web_api.get('me/player/currently-playing')
-                
-                if response.status_code == 204:
-                    send_notif('Error', 'No song currently playing')
-                else:
-                    return response.json().get('item').get('id')
-            except AttributeError:
-                return send_generic_error()
+            response = self.web_api.get('me/player')
+
+            return response.json().get('item').get('id')
 
     def is_saved(self, song_id):
 
@@ -125,14 +119,7 @@ class Spotify:
 
     def is_playing(self):
 
-        response = self.web_api.get('me/player/currently-playing')
-        status_code = response.status_code
-
-        if status_code == 204 or 200:
-
-            return False
-
-        return response.json().get('is_playing') == 'true'
+        return self.web_api.get('me/player').json().get('is_playing') == 'true'
 
     def get_shuffle_and_repeat_state(self):
 
@@ -154,9 +141,7 @@ class Spotify:
 
     def toggle_play(self):
 
-        is_playing = self.is_playing()
-
-        if is_playing:
+        if self.is_playing():
             return self.pause()
 
         return self.play()
@@ -169,14 +154,14 @@ class Spotify:
 
         is_shuffled = self.get_shuffle_and_repeat_state()[0]
 
-        return self.web_api.put('me/player/shuffle', data={'state': not is_shuffled})
+        return self.web_api.put('me/player/shuffle', params={'state': not is_shuffled})
 
     def toggle_repeat(self):  # TODO: add support for local api (applescript), add notif
 
         repeat_state = self.get_shuffle_and_repeat_state()[1]
         next_state = self.repeat_states[self.repeat_states.index(repeat_state)-1]
 
-        return self.web_api.put('me/player/repeat', data={'state': next_state})
+        return self.web_api.put('me/player/repeat', params={'state': next_state})
 
     def try_local_method_then_web(self, local_method_name, web_method_name):
 
@@ -197,9 +182,9 @@ class Spotify:
 
             send_notif('Error', 'Must be premium')
 
-        elif status_code is not 204:
+        elif status_code >= 300:
 
-            return send_generic_error()
+            return False
 
     def save(self):
 
@@ -219,7 +204,3 @@ class Spotify:
     def save_playlist(self):
 
         pass
-
-def send_generic_error():
-
-    return send_notif('Error', '')

@@ -4,6 +4,8 @@ import os
 
 from pynput.keyboard import Key, KeyCode, Listener
 
+from main.notif_handler import send_notif
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from spotify_api.spotify import Spotify
@@ -27,12 +29,16 @@ def get_key_from_string(key_str):
 
 def on_press(key):
     currently_pressed_keys.append(key)
-    print(currently_pressed_keys)
 
     for func_name, key_set in looking_for.items():
         if currently_pressed_keys == key_set:
 
-            getattr(spotify, func_name)()
+            try:
+                getattr(spotify, func_name)()
+
+            except ConnectionError:
+                send_notif('Connection Error', 'Internet connection not available')
+
             currently_pressed_keys.pop(-1)
 
 
