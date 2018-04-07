@@ -1,5 +1,5 @@
 ## spotify-helper
-Provides various utility methods to interact with Spotify, mostly through the ability to assign a hotkey or key combo to most Spotify functions. These are editable in the `options.txt` file. Run `main/keyboard_handler.py` with python 3 to start the script (has to be run as sudo on macOS for keyboard access).
+Provides various utility methods to interact with Spotify, mostly through the ability to assign keyboard shortcuts to most Spotify functions. These are editable in the `options.txt` file. Run `main/keyboard_handler.py` with python 3 to start the script (has to be run as sudo on macOS for keyboard access).
 
 The program first tries to directly interact with the Spotify client (unavailable on Windows), and then falls back on using the Web API; some methods are only available using the Web API.
 
@@ -13,11 +13,13 @@ To install all the dependencies needed, find the appropriate requirements text f
 
 `pip install -r requirements.txt`
 
+They are also listed below, together with a link to their site & how they are used:
+
 #### For all OSes
 
-- [Requests](http://docs.python-requests.org/en/master/)
-- [pynput](https://pythonhosted.org/pynput/)
+- [Requests](http://docs.python-requests.org/en/master/) - to communicate easily with the Spotify API service.
+- [pynput](https://pythonhosted.org/pynput/) - to read keyboard input regardless of platform.
 
 #### Windows
 
-- [pywin32](https://pypi.python.org/pypi/pywin32)
+- [pywin32](https://pypi.python.org/pypi/pywin32) - to be able to send notifications on Windows.
