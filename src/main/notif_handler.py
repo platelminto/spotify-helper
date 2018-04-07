@@ -57,6 +57,10 @@ def send_notif(title, text, icon_path=notif_icon_path):
 
 def send_notif_with_web_image(title, text, image_url):
 
+    if image_url is None:
+        send_notif(title, text)
+        return
+
     with urlopen(image_url) as response:
         data = response.read()
 

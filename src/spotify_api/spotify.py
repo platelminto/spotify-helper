@@ -7,6 +7,11 @@ from spotify_api.dbus_api import DBusApi
 from spotify_api.web_api import WebApi
 
 
+def get_device_name():
+
+    return platform.uname()[1]
+
+
 class Spotify:
 
     def __init__(self):
@@ -110,13 +115,17 @@ class Spotify:
 
     def show_current_song(self):
 
-        track = self.try_local_method_then_web('', '', 'get').json().get('item')
+        def get_track_from_web_api(response):
+
+            response.json().get('item')
+
+        track = self.try_local_method_then_web('get_current_track', '', 'get', get_track_from_web_api)
 
         song = track.get('name')
         artists = [x.get('name') for x in track.get('artists')]
         album = track.get('album').get('name')
 
-        send_notif_with_web_image(song, ', '.join(artists) + ' - ' + album, self.currently_playing_art_url(track))
+        send_notif_with_web_image(song, ', '.join(artists) + ' - ' + album, self.currently_playing_art_url())
 
     def currently_playing_id(self):
 
@@ -132,9 +141,16 @@ class Spotify:
     def currently_playing_art_url(self, track=None, quality=2):
 
         if track is None:
-            track = self.try_local_method_then_web('get_image', '', 'get').json().get('item')
+            try:
+                track = self.try_local_method_then_web('', '', 'get').json().get('item')
 
-        return track.get('album').get('images')[-quality].get('url')
+            except ConnectionError:
+
+                return None
+
+        images = track.get('album').get('images')
+
+        return images[-quality if len(images) >= 2 else 0].get('url')
 
     def remove_songs_from_library(self, *song_ids):
 
@@ -208,7 +224,7 @@ class Spotify:
         self.remove_songs_from_library(self.currently_playing_id())
         send_notif('Success', 'Successfully removed from library')
 
-    def toggle_shuffle(self):  # TODO: add support for local api (applescript)
+    def toggle_shuffle(self):
 
         toggled_shuffle = not self.get_shuffle_and_repeat_state()[0]
 
@@ -216,7 +232,7 @@ class Spotify:
 
         send_notif('Shuffle toggled', 'Shuffle now ' + ('enabled' if toggled_shuffle else 'disabled'))
 
-    def toggle_repeat(self):  # TODO: add support for local api (applescript)
+    def toggle_repeat(self):
 
         def change_state_with_web_api(response):
             repeat_state = response.json().get('repeat_state')
@@ -226,6 +242,10 @@ class Spotify:
             send_notif('Repeat changed', 'Repeating is now set to: ' + next_state)
 
         self.try_local_method_then_web('toggle_shuffle', '', 'get', change_state_with_web_api, 'get')
+
+    def get_current_device_id(self):
+
+        return next(x.get(id) for x in self.call_player_method('devices', 'get').json().get('devices') if x.get('name') == get_device_name())
 
     def try_local_method_then_web(self, local_method_name, web_method_name, rest_function_name,
                                   do_with_web_result=lambda x: x, params=None, payload=None):
