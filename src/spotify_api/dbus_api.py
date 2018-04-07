@@ -40,6 +40,31 @@ class DBusApi:
 
         return self.get_info('mpris:trackid').split(':')[-1]
 
+    def get_album(self):
+
+        return self.get_info('xesam:album')
+
+    def get_track(self):
+
+        return self.get_info('xesam:title')
+
+    def get_artist(self):
+
+        return str(self.get_info('xesam:artist')[0])
+
+    def get_art_url(self):
+
+        return self.get_info('mpris:artUrl')
+
+    def get_current_track(self):  # Tries to (partly) emulate a Spotify track object
+
+        track = dict()
+        track['name'] = self.get_track()
+        track['artists'] = [{'name': self.get_artist()}]
+        track['album'] = {'name': self.get_album(), 'images': [{'url': self.get_art_url()}]}
+
+        return track
+
     def play_pause(self):
 
         return self.run_method('PlayPause')
