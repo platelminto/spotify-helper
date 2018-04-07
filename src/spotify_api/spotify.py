@@ -245,9 +245,13 @@ class Spotify:
 
         self.try_local_method_then_web('toggle_shuffle', '', 'get', change_state_with_web_api, 'get')
 
+    def play_on_current_device(self):
+
+        self.call_player_method('', 'put', payload={'device_ids': [self.get_current_device_id()]})
+
     def get_current_device_id(self):
 
-        return next(x.get(id) for x in self.call_player_method('devices', 'get').json().get('devices') if x.get('name') == get_device_name())
+        return next(x.get('id') for x in self.call_player_method('devices', 'get').json().get('devices') if x.get('name') == get_device_name())
 
     def try_local_method_then_web(self, local_method_name, web_method_name, rest_function_name,
                                   do_with_web_result=lambda x: x, params=None, payload=None):
