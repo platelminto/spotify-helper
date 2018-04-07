@@ -57,8 +57,16 @@ def on_release(key):
 with open(bindings_file) as file:
 
     for line in file:
-        line = line.rstrip()
-        method, bindings = line.split('=')[0], line.split('=')[-1]
+        method_and_keycodes = line.split('=')
+
+        method = method_and_keycodes[0]
+        rest_of_line = method_and_keycodes[1]
+
+        if '#' in rest_of_line:
+
+            rest_of_line = rest_of_line[:rest_of_line.index('#')]
+
+        bindings = rest_of_line.rstrip()
 
         if bindings is not '':
             for binding in bindings.split(','):
