@@ -13,11 +13,13 @@ To install all the dependencies needed, find the appropriate requirements text f
 
 `pip install -r requirements.txt`
 
+They are also listed below, together with a link to their site & how they are used:
+
 #### For all OSes
 
-- [Requests](http://docs.python-requests.org/en/master/)
-- [pynput](https://pythonhosted.org/pynput/)
+- [Requests](http://docs.python-requests.org/en/master/) - to communicate easily with the Spotify API service.
+- [pynput](https://pythonhosted.org/pynput/) - to read keyboard input regardless of platform.
 
 #### Windows
 
-- [pywin32](https://pypi.python.org/pypi/pywin32)
+- [pywin32](https://pypi.python.org/pypi/pywin32) - to be able to send notifications on Windows.
