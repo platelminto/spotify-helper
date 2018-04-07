@@ -121,7 +121,6 @@ class Spotify:
     def currently_playing_id(self):
 
         def get_id_from_web_api(response):
-
             return response.json().get('item').get('id')
 
         return self.try_local_method_then_web('get_track_id', '', 'get', get_id_from_web_api, 'get')
@@ -133,7 +132,6 @@ class Spotify:
     def currently_playing_art_url(self, track=None, quality=2):
 
         if track is None:
-
             track = self.try_local_method_then_web('get_image', '', 'get').json().get('item')
 
         return track.get('album').get('images')[-quality].get('url')
@@ -186,8 +184,14 @@ class Spotify:
     def play(self):
 
         # self.try_local_method_then_web('play', 'play', 'put') returns error 502
-        self.try_local_method_then_web('play', '', 'put', payload={'play': True,
-                                                                   'device_ids': [self.current_device().get('id')]})
+
+        try:
+
+            self.local_api.play()
+
+        except AttributeError:
+            self.call_player_method('', 'put', payload={'play': True,
+                                                        'device_ids': [self.current_device().get('id')]})
 
     def save(self):
 
@@ -215,16 +219,16 @@ class Spotify:
     def toggle_repeat(self):  # TODO: add support for local api (applescript)
 
         def change_state_with_web_api(response):
-
             repeat_state = response.json().get('repeat_state')
 
-            next_state = self.repeat_states[self.repeat_states.index(repeat_state)-1]
+            next_state = self.repeat_states[self.repeat_states.index(repeat_state) - 1]
             self.web_api.put('me/player/repeat', params={'state': next_state})
             send_notif('Repeat changed', 'Repeating is now set to: ' + next_state)
 
         self.try_local_method_then_web('toggle_shuffle', '', 'get', change_state_with_web_api, 'get')
 
-    def try_local_method_then_web(self, local_method_name, web_method_name, rest_function_name, do_with_web_result=lambda x: x, params=None, payload=None):
+    def try_local_method_then_web(self, local_method_name, web_method_name, rest_function_name,
+                                  do_with_web_result=lambda x: x, params=None, payload=None):
 
         try:
 
@@ -246,7 +250,6 @@ class Spotify:
         status_code = response.status_code
 
         if status_code is 403:
-
             send_notif('Error', 'Must be premium')
             return
 
@@ -268,5 +271,4 @@ class Spotify:
 
 
 if __name__ == '__main__':
-
     spotify = Spotify()
