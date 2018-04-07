@@ -6,7 +6,7 @@ from urllib.request import urlopen
 current_os = platform.system()
 
 notif_icon_path = os.path.abspath('../resources/spotify.ico')
-notif_duration_ms = 3100
+notif_duration_ms = 3750
 
 if current_os == 'Linux':
 

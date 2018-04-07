@@ -194,18 +194,22 @@ class Spotify:
         self.remove_songs_from_library(self.currently_playing_id())
         send_notif('Success', 'Successfully removed from library')
 
-    def toggle_shuffle(self):  # TODO: add support for local api (applescript), add notif
+    def toggle_shuffle(self):  # TODO: add support for local api (applescript)
 
-        is_shuffled = self.get_shuffle_and_repeat_state()[0]
+        toggled_shuffle = not self.get_shuffle_and_repeat_state()[0]
 
-        self.web_api.put('me/player/shuffle', params={'state': not is_shuffled})
+        self.web_api.put('me/player/shuffle', params={'state': toggled_shuffle})
 
-    def toggle_repeat(self):  # TODO: add support for local api (applescript), add notif
+        send_notif('Shuffle toggled', 'Shuffle now ' + ('enabled' if toggled_shuffle else 'disabled'))
+
+    def toggle_repeat(self):  # TODO: add support for local api (applescript)
 
         repeat_state = self.get_shuffle_and_repeat_state()[1]
         next_state = self.repeat_states[self.repeat_states.index(repeat_state)-1]
 
         self.web_api.put('me/player/repeat', params={'state': next_state})
+
+        send_notif('Repeat changed', 'Repeating is now set to: ' + next_state)
 
     def try_local_method_then_web(self, local_method_name, web_method_name, rest_function_name, params=None, payload=None):
 
