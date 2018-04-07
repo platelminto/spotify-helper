@@ -1,3 +1,5 @@
+from json.decoder import JSONDecodeError
+
 import requests
 import time
 import webbrowser
@@ -106,7 +108,6 @@ class WebApi:
             self.write_auth_info()
 
         if r.status_code == 401:
-
             self.write_auth_info()
 
         if 'refresh_token' in info:
@@ -139,7 +140,6 @@ class WebApi:
     def get_access_header(self):
 
         with open(self.auth_keys_path, 'r+') as file:
-
             self.check_for_refresh_token(file, self.expiry_time)
 
         return {'Authorization': 'Bearer ' + self.access_token}
@@ -151,7 +151,8 @@ class WebApi:
         if code >= 300:
             print(code)
             print(r.json().get('error').get('message'))
-            return r
+            if not (code == 403):
+                raise Exception
 
         return r
 
@@ -189,9 +190,9 @@ class WebApi:
     def put(self, endpoint, params=None, payload=None, timeout=4, retry=1):
 
         try:
-            return self.check_status_code(requests.post(self.api_url + endpoint,
-                                                        data=json.dumps(payload), params=params, headers=self.get_access_header(),
-                                                        timeout=timeout))
+            return self.check_status_code(requests.put(self.api_url + endpoint,
+                                                       data=json.dumps(payload), params=params, headers=self.get_access_header(),
+                                                       timeout=timeout))
         except requests.exceptions.ConnectionError:
 
             if retry is not 0:
@@ -205,9 +206,9 @@ class WebApi:
     def delete(self, endpoint, params=None, payload=None, timeout=4, retry=1):
 
         try:
-            return self.check_status_code(requests.post(self.api_url + endpoint,
-                                                        data=json.dumps(payload), params=params, headers=self.get_access_header(),
-                                                        timeout=timeout))
+            return self.check_status_code(requests.delete(self.api_url + endpoint,
+                                                          data=json.dumps(payload), params=params, headers=self.get_access_header(),
+                                                          timeout=timeout))
         except requests.exceptions.ConnectionError:
 
             if retry is not 0:

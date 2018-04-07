@@ -1,7 +1,7 @@
 import datetime
 import platform
 
-from main.notif_handler import send_notif
+from main.notif_handler import send_notif, send_notif_with_web_image
 from spotify_api.applescript_api import AppleScriptApi
 from spotify_api.dbus_api import DBusApi
 from spotify_api.web_api import WebApi
@@ -99,19 +99,40 @@ class Spotify:
     def add_songs_to_library(self, *song_ids):
         return self.web_api.put('me/tracks', payload={'ids': song_ids})
 
+    def available_devices(self):
+
+        return self.web_api.get('me/player/devices').json().get('devices')
+
+    def current_device(self):
+
+        devices = self.available_devices()
+        return next(device for device in devices if device.get('is_active'))
+
+    def show_current_song(self):
+
+        track = self.try_local_method_then_web('', '', 'get').json().get('item')
+
+        song = track.get('name')
+        artists = [x.get('name') for x in track.get('artists')]
+        album = track.get('album').get('name')
+
+        send_notif_with_web_image(song, ', '.join(artists) + ' - ' + album, self.currently_playing_art_url(track))
+
     def currently_playing_id(self):
-        try:
 
-            return self.local_api.get_track_id()
-
-        except AttributeError:
-            response = self.web_api.get('me/player')
-
-            return response.json().get('item').get('id')
+        return self.try_local_method_then_web('get_track_id', '', 'get').json().get('item').get('id')
 
     def is_saved(self, song_id):
 
         return self.web_api.get('me/tracks/contains?ids=' + song_id).json()[0]
+
+    def currently_playing_art_url(self, track=None, quality=2):
+
+        if track is None:
+
+            track = self.try_local_method_then_web('get_image', '', 'get').json().get('item')
+
+        return track.get('album').get('images')[-quality].get('url')
 
     def remove_songs_from_library(self, *song_ids):
 
@@ -119,51 +140,74 @@ class Spotify:
 
     def is_playing(self):
 
-        return self.web_api.get('me/player').json().get('is_playing') == 'true'
+        return self.try_local_method_then_web('is_playing', 'is_playing', 'get').json().get('is_playing')
 
     def get_shuffle_and_repeat_state(self):
 
         response = self.web_api.get('me/player').json()
 
-        return response.get('shuffle_state') == 'true', response.get('repeat_state')
+        return response.get('shuffle_state'), response.get('repeat_state')
 
     def next(self):
 
-        return self.try_local_method_then_web('next', 'next')
+        self.try_local_method_then_web('next', 'next', 'post')
 
     def previous(self):
 
-        return self.try_local_method_then_web('previous', 'previous')
+        self.try_local_method_then_web('previous', 'previous', 'post')
+
+    def restart(self):
+
+        self.try_local_method_then_web('restart', 'seek', 'put', params={'position_ms': 0})
 
     def pause(self):
 
-        return self.try_local_method_then_web('pause', 'pause')
+        self.try_local_method_then_web('pause', 'pause', 'put')
 
     def toggle_play(self):
 
-        if self.is_playing():
-            return self.pause()
+        is_playing = self.is_playing()
 
-        return self.play()
+        if is_playing:
+            self.pause()
+        else:
+            self.play()
 
     def play(self):
 
-        return self.try_local_method_then_web('play', 'play')
+        # self.try_local_method_then_web('play', 'play', 'put') returns error 502
+        self.try_local_method_then_web('play', '', 'put', payload={'play': True,
+                                                                   'device_ids': [self.current_device().get('id')]})
+
+    def save(self):
+
+        if not self.is_saved(self.currently_playing_id()):
+
+            self.add_songs_to_library(self.currently_playing_id())
+            send_notif('Success', 'Successfully added to library')
+        else:
+
+            send_notif('Success', 'Was already in library')
+
+    def unsave(self):
+
+        self.remove_songs_from_library(self.currently_playing_id())
+        send_notif('Success', 'Successfully removed from library')
 
     def toggle_shuffle(self):  # TODO: add support for local api (applescript), add notif
 
         is_shuffled = self.get_shuffle_and_repeat_state()[0]
 
-        return self.web_api.put('me/player/shuffle', params={'state': not is_shuffled})
+        self.web_api.put('me/player/shuffle', params={'state': not is_shuffled})
 
     def toggle_repeat(self):  # TODO: add support for local api (applescript), add notif
 
         repeat_state = self.get_shuffle_and_repeat_state()[1]
         next_state = self.repeat_states[self.repeat_states.index(repeat_state)-1]
 
-        return self.web_api.put('me/player/repeat', params={'state': next_state})
+        self.web_api.put('me/player/repeat', params={'state': next_state})
 
-    def try_local_method_then_web(self, local_method_name, web_method_name):
+    def try_local_method_then_web(self, local_method_name, web_method_name, rest_function_name, params=None, payload=None):
 
         try:
 
@@ -171,36 +215,41 @@ class Spotify:
 
         except AttributeError:
 
-            self.call_player_method(web_method_name)
+            return self.call_player_method(web_method_name, rest_function_name, params, payload)
 
-    def call_player_method(self, method):
+    def call_player_method(self, method, rest_function_name, params=None, payload=None):
 
-        response = self.web_api.post('me/player/' + method)
+        if rest_function_name == 'get':
+
+            response = getattr(self.web_api, rest_function_name)('me/player/' + method, params=params)
+        else:
+
+            response = getattr(self.web_api, rest_function_name)('me/player/' + method, params=params, payload=payload)
+
         status_code = response.status_code
 
         if status_code is 403:
 
             send_notif('Error', 'Must be premium')
+            return
 
-        elif status_code >= 300:
+        return response
 
-            return False
+    def toggle_save(self):
 
-    def save(self):
+        is_saved = self.is_saved(self.currently_playing_id())
 
-        song_id = self.currently_playing_id()
+        if is_saved:
+            self.unsave()
 
-        if song_id:
-            is_saved = self.is_saved(song_id)
+        else:
+            self.save()
 
-            if is_saved:
-                self.remove_songs_from_library(song_id)
-                send_notif('Success', 'Successfully removed from library')
-
-            else:
-                self.add_songs_to_library(song_id)
-                send_notif('Success', 'Successfully added to library')
-
-    def save_playlist(self):
+    def save_playlist(self):  # TODO
 
         pass
+
+
+if __name__ == '__main__':
+
+    spotify = Spotify()

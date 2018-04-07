@@ -1,5 +1,7 @@
 import platform
 import os
+import tempfile
+from urllib.request import urlopen
 
 current_os = platform.system()
 
@@ -38,25 +40,11 @@ def linux_notify(title, text, icon_path, duration):
     method("save-song-spotify", 24, icon_path, title, text, [], [], duration)
 
 
-def make_notif(success, success_string, fail_string):
-
-    full_success_string = 'Successfully ' + success_string + ' library'
-    full_fail_string = 'Failed to ' + fail_string + ' library'
-
-    if success:
-
-        send_notif('Success', full_success_string)
-
-    else:
-
-        send_notif('Failure', full_fail_string)
-
-
-def send_notif(title, text):
+def send_notif(title, text, icon_path=notif_icon_path):
 
     if current_os == 'Linux':
 
-        linux_notify(title, text, notif_icon_path, notif_duration_ms)
+        linux_notify(title, text, icon_path, notif_duration_ms)
 
     elif current_os == 'Darwin':
 
@@ -64,4 +52,18 @@ def send_notif(title, text):
 
     elif current_os == 'Windows':
 
-        windows_notify(title, text, notif_icon_path, notif_duration_ms)
+        windows_notify(title, text, icon_path, notif_duration_ms)
+
+
+def send_notif_with_web_image(title, text, image_url):
+
+    with urlopen(image_url) as response:
+        data = response.read()
+
+        file = tempfile.NamedTemporaryFile(delete=False)
+        file.write(data)
+        file.close()
+
+        send_notif(title, text, file.name)
+
+        os.unlink(file.name)

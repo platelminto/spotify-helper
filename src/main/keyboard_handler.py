@@ -1,6 +1,7 @@
 import sys
 
 import os
+import traceback
 
 from pynput.keyboard import Key, KeyCode, Listener
 
@@ -10,7 +11,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from spotify_api.spotify import Spotify
 
-options_file = '../options.txt'
 bindings_file = '../bindings.txt'
 
 spotify = Spotify()
@@ -30,14 +30,19 @@ def get_key_from_string(key_str):
 def on_press(key):
     currently_pressed_keys.append(key)
 
-    for func_name, key_set in looking_for.items():
-        if currently_pressed_keys == key_set:
+    for key_tuple, methods in looking_for.items():
+        if currently_pressed_keys == list(key_tuple):
 
             try:
-                getattr(spotify, func_name)()
+                for method in methods:
+                    getattr(spotify, method)()
 
             except ConnectionError:
                 send_notif('Connection Error', 'Internet connection not available')
+            except Exception as e:
+                send_notif('Error', 'Something went wrong')
+                print(e)
+                traceback.print_tb(e.__traceback__)
 
             currently_pressed_keys.pop(-1)
 
@@ -53,14 +58,21 @@ with open(bindings_file) as file:
 
     for line in file:
         line = line.rstrip()
-        name, binding = line.split('=')[0], line.split('=')[-1]
+        method, bindings = line.split('=')[0], line.split('=')[-1]
 
-        if binding is not '':
-            keys = list()
-            for single_key in binding.split('+'):
-                keys.append(get_key_from_string(single_key))
+        if bindings is not '':
+            for binding in bindings.split(','):
+                keys = list()
+                for single_key in binding.split('+'):
+                    keys.append(get_key_from_string(single_key))
 
-            looking_for[name] = keys
+                keys_tuple = tuple(keys)
+
+                if keys_tuple not in looking_for.keys():
+                    looking_for[keys_tuple] = []
+
+                looking_for[keys_tuple].append(method)
+
 
 with Listener(on_press=on_press, on_release=on_release) as listener:
     listener.join()
