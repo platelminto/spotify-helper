@@ -30,7 +30,7 @@ class Spotify:
         if self.current_os == 'Darwin':
             self.local_api = AppleScriptApi()
 
-        elif self.current_os == 'Linx':
+        elif self.current_os == 'Linux':
             self.local_api = DBusApi()
 
         self.repeat_states = ['track', 'context', 'off']
@@ -120,7 +120,11 @@ class Spotify:
 
     def currently_playing_id(self):
 
-        return self.try_local_method_then_web('get_track_id', '', 'get').json().get('item').get('id')
+        def get_id_from_web_api(response):
+
+            return response.json().get('item').get('id')
+
+        return self.try_local_method_then_web('get_track_id', '', 'get', get_id_from_web_api, 'get')
 
     def is_saved(self, song_id):
 
@@ -140,7 +144,7 @@ class Spotify:
 
     def is_playing(self):
 
-        return self.try_local_method_then_web('is_playing', 'is_playing', 'get').json().get('is_playing')
+        return self.try_local_method_then_web('is_playing', '', 'get').json().get('is_playing')
 
     def get_shuffle_and_repeat_state(self):
 
@@ -166,12 +170,18 @@ class Spotify:
 
     def toggle_play(self):
 
-        is_playing = self.is_playing()
+        try:
 
-        if is_playing:
-            self.pause()
-        else:
-            self.play()
+            self.local_api.play_pause()
+
+        except AttributeError:
+
+            is_playing = self.is_playing()
+
+            if is_playing:
+                self.pause()
+            else:
+                self.play()
 
     def play(self):
 
@@ -204,14 +214,17 @@ class Spotify:
 
     def toggle_repeat(self):  # TODO: add support for local api (applescript)
 
-        repeat_state = self.get_shuffle_and_repeat_state()[1]
-        next_state = self.repeat_states[self.repeat_states.index(repeat_state)-1]
+        def change_state_with_web_api(response):
 
-        self.web_api.put('me/player/repeat', params={'state': next_state})
+            repeat_state = response.json().get('repeat_state')
 
-        send_notif('Repeat changed', 'Repeating is now set to: ' + next_state)
+            next_state = self.repeat_states[self.repeat_states.index(repeat_state)-1]
+            self.web_api.put('me/player/repeat', params={'state': next_state})
+            send_notif('Repeat changed', 'Repeating is now set to: ' + next_state)
 
-    def try_local_method_then_web(self, local_method_name, web_method_name, rest_function_name, params=None, payload=None):
+        self.try_local_method_then_web('toggle_shuffle', '', 'get', change_state_with_web_api, 'get')
+
+    def try_local_method_then_web(self, local_method_name, web_method_name, rest_function_name, do_with_web_result=lambda x: x, params=None, payload=None):
 
         try:
 
@@ -219,7 +232,7 @@ class Spotify:
 
         except AttributeError:
 
-            return self.call_player_method(web_method_name, rest_function_name, params, payload)
+            return do_with_web_result(self.call_player_method(web_method_name, rest_function_name, params, payload))
 
     def call_player_method(self, method, rest_function_name, params=None, payload=None):
 

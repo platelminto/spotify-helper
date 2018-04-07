@@ -1,5 +1,3 @@
-from json.decoder import JSONDecodeError
-
 import requests
 import time
 import webbrowser
