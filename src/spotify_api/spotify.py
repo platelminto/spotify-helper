@@ -226,11 +226,13 @@ class Spotify:
 
     def toggle_shuffle(self):
 
-        toggled_shuffle = not self.get_shuffle_and_repeat_state()[0]
+        def change_shuffle_with_web_api(response):
+            toggled_shuffle = not response.json().get('shuffle_state')
 
-        self.web_api.put('me/player/shuffle', params={'state': toggled_shuffle})
+            self.web_api.put('me/player/shuffle', params={'state': toggled_shuffle})
+            send_notif('Shuffle toggled', 'Shuffle now ' + ('enabled' if toggled_shuffle else 'disabled'))
 
-        send_notif('Shuffle toggled', 'Shuffle now ' + ('enabled' if toggled_shuffle else 'disabled'))
+        self.try_local_method_then_web('toggle_shuffle', '', 'get', change_shuffle_with_web_api)
 
     def toggle_repeat(self):
 
