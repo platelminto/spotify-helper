@@ -32,17 +32,16 @@ def on_press(key):
 
     for key_tuple, methods in looking_for.items():
         if currently_pressed_keys == list(key_tuple):
+            for method in methods:
+                try:
+                        getattr(spotify, method)()
 
-            try:
-                for method in methods:
-                    getattr(spotify, method)()
-
-            except ConnectionError:
-                send_notif('Connection Error', 'Internet connection not available')
-            except Exception as e:
-                send_notif('Error', 'Something went wrong')
-                print(e)
-                traceback.print_tb(e.__traceback__)
+                except ConnectionError:
+                    send_notif('Connection Error', 'Internet connection not available')
+                except Exception as e:
+                    send_notif('Error', 'Something went wrong')
+                    print(e)
+                    traceback.print_tb(e.__traceback__)
 
             currently_pressed_keys.pop(-1)
 
