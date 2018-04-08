@@ -298,3 +298,4 @@ class Spotify:
 
 if __name__ == '__main__':
     spotify = Spotify()
+    spotify.show_current_song()

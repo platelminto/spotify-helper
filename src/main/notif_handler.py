@@ -1,7 +1,7 @@
 import platform
 import os
 import tempfile
-from urllib.request import urlopen
+from urllib.request import urlopen, URLError
 
 current_os = platform.system()
 
@@ -55,19 +55,23 @@ def send_notif(title, text, icon_path=notif_icon_path):
         windows_notify(title, text, icon_path, notif_duration_ms)
 
 
-def send_notif_with_web_image(title, text, image_url):
+def send_notif_with_web_image(title, text, image_url, timeout=0.75):
 
     if image_url is None:
         send_notif(title, text)
         return
 
-    with urlopen(image_url) as response:
-        data = response.read()
+    try:
+        with urlopen(image_url, timeout=timeout) as response:
+            data = response.read()
 
-        file = tempfile.NamedTemporaryFile(delete=False)
-        file.write(data)
-        file.close()
+            file = tempfile.NamedTemporaryFile(delete=False)
+            file.write(data)
+            file.close()
 
-        send_notif(title, text, file.name)
+            send_notif(title, text, file.name)
 
-        os.unlink(file.name)
+            os.unlink(file.name)
+    except URLError:
+
+        send_notif(title, text)
