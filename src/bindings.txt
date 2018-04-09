@@ -1,0 +1,14 @@
+save=
+toggle_save=ctrl_l+shift+f12
+unsave=
+save_monthly_playlist=ctrl_l+shift+f12
+next=
+previous=
+restart=
+pause=
+toggle_play=
+play=
+toggle_repeat=
+toggle_shuffle=
+show_current_song=ctrl_l+shift+f10
+play_on_current_device=
