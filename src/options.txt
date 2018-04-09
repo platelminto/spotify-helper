@@ -1,3 +1,0 @@
-playlist=
-art_when_saving=no
-art_when_showing_info=yes
