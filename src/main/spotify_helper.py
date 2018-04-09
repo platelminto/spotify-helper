@@ -34,7 +34,7 @@ def on_press(key):
         if currently_pressed_keys == list(key_tuple):
             for method in methods:
                 try:
-                        getattr(spotify, method)()
+                    getattr(spotify, method)()
 
                 except ConnectionError:
                     send_notif('Connection Error', 'Internet connection not available')

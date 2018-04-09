@@ -1,4 +1,7 @@
 import platform
+import threading
+import time
+
 import dbus
 
 
@@ -9,14 +12,41 @@ class DBusApi:
         self.current_os = platform.system()
         self.player = 'org.mpris.MediaPlayer2.Player'
 
-        session_bus = dbus.SessionBus()
-        self.spotify_bus = session_bus.get_object('org.mpris.MediaPlayer2.spotify',
-                                                  '/org/mpris/MediaPlayer2')
+        self.session_bus = dbus.SessionBus()
+        self.spotify_open = False
+
+        try:
+            self.spotify_bus = self.session_bus.get_object('org.mpris.MediaPlayer2.spotify',
+                                                           '/org/mpris/MediaPlayer2')
+            self.spotify_open = True
+
+        except dbus.exceptions.DBusException:
+
+            t = threading.Thread(target=self.check_spotify_open)
+            t.daemon = True
+            t.start()
+
+            return
+
         self.spotify_properties = dbus.Interface(self.spotify_bus,
                                                  'org.freedesktop.DBus.Properties')
         self.metadata = self.spotify_properties.Get(self.player, 'Metadata')
 
         self.interface = dbus.Interface(self.spotify_bus, self.player)
+
+    def check_spotify_open(self):
+
+        while not self.spotify_open:
+
+            time.sleep(10)
+
+            try:
+                self.spotify_bus = self.session_bus.get_object('org.mpris.MediaPlayer2.spotify',
+                                                               '/org/mpris/MediaPlayer2')
+                self.spotify_open = True
+
+            except dbus.exceptions.DBusException:
+                pass
 
     # Spotify doesn't support the majority of available properties
     def get_property(self, player_propety):
