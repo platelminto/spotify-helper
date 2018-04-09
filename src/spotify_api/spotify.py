@@ -335,11 +335,6 @@ class Spotify:
         else:
             self.save()
 
-    def save_playlist(self):  # TODO
-
-        pass
-
 
 if __name__ == '__main__':
     spotify = Spotify()
-    spotify.save_monthly_playlist()
