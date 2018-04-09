@@ -57,7 +57,7 @@ def send_notif(title, text, icon_path=notif_icon_path):
 
 def send_notif_with_web_image(title, text, image_url, timeout=0.5):
 
-    if image_url is None:
+    if image_url is None or current_os == 'Darwin':
         send_notif(title, text)
         return
 
