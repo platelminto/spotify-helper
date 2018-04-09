@@ -102,7 +102,7 @@ class Spotify:
         return self.web_api.delete('users/' + self.get_user_id() + '/playlists/' + self.get_monthly_playlist_id() + '/tracks',
                                    payload={'tracks': [{'uri': 'spotify:track:' + song_id}]})
 
-    def save_monthly_playlist(self):
+    def toggle_save_monthly_playlist(self):
 
         song_id = self.currently_playing_id()
         is_in_playlist = self.is_in_playlist(song_id)
@@ -255,7 +255,9 @@ class Spotify:
                                       self.currently_playing_art_url())
         else:
 
-            send_notif('Already saved', song + ' was already in library.')
+            send_notif_with_web_image('Already saved',
+                                      song + ' was already in library.',
+                                      self.currently_playing_art_url())
 
     def unsave(self):
 
