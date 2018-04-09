@@ -23,20 +23,19 @@ class WebApi:
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
 
-        with open(self.auth_keys_path, 'r+') as file:
-            try:
-                file = open(self.auth_keys_path, 'r+')
+        try:
+            with open(self.auth_keys_path, 'r+') as file:
 
                 self.load_auth_values(file)
 
                 self.check_for_refresh_token(file, self.expiry_time)
 
-            except (FileNotFoundError, ValueError):
-                self.write_auth_info()
+        except (FileNotFoundError, ValueError):
+            self.write_auth_info()
 
-            t = threading.Thread(target=self.check_online, args=(file,))
-            t.daemon = True
-            t.start()
+        t = threading.Thread(target=self.check_online, args=(self.auth_keys_path,))
+        t.daemon = True
+        t.start()
 
     def write_auth_info(self):
 
@@ -73,13 +72,14 @@ class WebApi:
 
         return r.json()
 
-    def check_online(self, file):
+    def check_online(self, file_path):
 
-        while True:
-            time.sleep(10)
+        with open(file_path) as file:
+            while True:
+                time.sleep(10)
 
-            if not self.online:
-                self.refresh_tokens(file)
+                if not self.online:
+                    self.refresh_tokens(file)
 
     def refresh_tokens(self, file):
 

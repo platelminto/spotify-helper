@@ -5,11 +5,10 @@ import traceback
 
 from pynput.keyboard import Key, KeyCode, Listener
 
-from main.notif_handler import send_notif
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from spotify_api.spotify import Spotify
+from main.notif_handler import send_notif
 
 bindings_file = '../bindings.txt'
 

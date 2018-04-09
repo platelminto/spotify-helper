@@ -1,7 +1,7 @@
 save=
 toggle_save=ctrl_l+shift+f12
 unsave=
-save_monthly_playlist=ctrl_l+shift+f12
+toggle_save_monthly_playlist=ctrl_l+shift+f12
 next=
 previous=
 restart=

@@ -2,9 +2,15 @@ import datetime
 import platform
 
 from main.notif_handler import send_notif, send_notif_with_web_image
-from spotify_api.applescript_api import AppleScriptApi
-from spotify_api.dbus_api import DBusApi
 from spotify_api.web_api import WebApi
+
+current_os = platform.system()
+
+if current_os == 'Darwin':
+    from spotify_api.applescript_api import AppleScriptApi
+
+elif current_os == 'Linux':
+    from spotify_api.dbus_api import DBusApi
 
 
 def get_device_name():
@@ -14,8 +20,6 @@ def get_device_name():
 class Spotify:
 
     def __init__(self):
-
-        self.current_os = platform.system()
 
         keys_file = open('../keys.txt')
 
@@ -31,10 +35,10 @@ class Spotify:
 
         self.web_api = WebApi(scope_list=scope_list, client_id=client_id,
                               client_secret=client_secret, redirect_uri=redirect_uri)
-        if self.current_os == 'Darwin':
+        if current_os == 'Darwin':
             self.local_api = AppleScriptApi()
 
-        elif self.current_os == 'Linux':
+        elif current_os == 'Linux':
             self.local_api = DBusApi()
 
         self.repeat_states = ['track', 'context', 'off']
@@ -342,4 +346,3 @@ class Spotify:
 
 if __name__ == '__main__':
     spotify = Spotify()
-    spotify.save_monthly_playlist()
