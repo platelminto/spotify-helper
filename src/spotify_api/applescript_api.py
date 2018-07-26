@@ -81,6 +81,3 @@ class AppleScriptApi:
     def play():
 
         return AppleScriptApi.run_command('play')
-
-
-print(AppleScriptApi.play())
