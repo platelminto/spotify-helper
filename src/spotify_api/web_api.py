@@ -140,6 +140,8 @@ class WebApi:
         with open(self.auth_keys_path, 'r+') as file:
             self.check_for_refresh_token(file, self.expiry_time)
 
+        print('request made')
+
         return {'Authorization': 'Bearer ' + self.access_token}
 
     @staticmethod

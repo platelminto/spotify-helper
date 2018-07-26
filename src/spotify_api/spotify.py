@@ -237,7 +237,12 @@ class Spotify:
 
     def play(self):
 
-        # self.try_local_method_then_web('play', 'play', 'put') returns error 502
+        # self.try_local_method_then_web('py',
+        #                                'play', 'put', params=
+        #                                {'context_uri': 'spotify:album:1Je1IMUlBXcx1Fz0WE7oPT',
+        #                                 'uris':
+        #                                     ['spotify:track:4iV5W9uYEdYUVa79Axb7Rh',
+        #                                      'spotify:track:1301WleyT98MSxVHPZCA6M']})
 
         try:
 
