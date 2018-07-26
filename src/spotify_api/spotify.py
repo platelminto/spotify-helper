@@ -291,7 +291,7 @@ class Spotify:
             self.web_api.put('me/player/repeat', params={'state': next_state})
             send_notif('Repeat changed', 'Repeating is now set to: ' + next_state)
 
-        self.try_local_method_then_web('toggle_shuffle', '', 'get', change_state_with_web_api, 'get')
+        self.try_local_method_then_web('toggle_repeat', '', 'get', change_state_with_web_api, 'get')
 
     def play_on_current_device(self):
 

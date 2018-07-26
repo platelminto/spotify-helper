@@ -81,3 +81,13 @@ class AppleScriptApi:
     def play():
 
         return AppleScriptApi.run_command('play')
+
+    @staticmethod
+    def toggle_repeat():
+
+        return AppleScriptApi.run_command('set repeating to not repeating')
+
+    @staticmethod
+    def toggle_shuffle():
+
+        return AppleScriptApi.run_command('set shuffling to not shuffling')
