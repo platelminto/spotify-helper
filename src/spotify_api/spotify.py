@@ -28,7 +28,7 @@ class Spotify:
 
         keys_file.close()
 
-        redirect_uri = 'http://localhost:8888/callback'
+        redirect_uri = 'http://www.spotifyhelper.xyz/callback'
 
         scope_list = ['user-library-read', 'user-library-modify', 'playlist-modify-public',
                       'user-modify-playback-state', 'user-read-playback-state']
@@ -237,20 +237,19 @@ class Spotify:
 
     def play(self):
 
-        # self.try_local_method_then_web('py',
-        #                                'play', 'put', params=
+        # self.try_local_method_then_web('play',
+        #                                'play', 'put', payload=
         #                                {'context_uri': 'spotify:album:1Je1IMUlBXcx1Fz0WE7oPT',
-        #                                 'uris':
-        #                                     ['spotify:track:4iV5W9uYEdYUVa79Axb7Rh',
-        #                                      'spotify:track:1301WleyT98MSxVHPZCA6M']})
+        #                                 'offset':{'position': 5}})
+        #                                 # 'uris':
+        #                                 #     # ['spotify:track:4iV5W9uYEdYUVa79Axb7Rh',
+        #                                 #     #  'spotify:track:1301WleyT98MSxVHPZCA6M']})
 
         try:
-
             self.local_api.play()
 
         except AttributeError:
-            self.call_player_method('', 'put', payload={'play': True,
-                                                        'device_ids': [self.current_device().get('id')]})
+            self.try_local_method_then_web('play', 'play', 'put')
 
     def save(self):
 
@@ -315,7 +314,7 @@ class Spotify:
 
         except AttributeError:
 
-            return do_with_web_result(self.call_player_method(web_method_name, rest_function_name, params, payload))
+            return do_with_web_result(self.call_player_method(web_method_name, rest_function_name, params=params, payload=payload))
 
     def call_player_method(self, method, rest_function_name, params=None, payload=None):
 
