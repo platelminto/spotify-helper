@@ -1,32 +1,21 @@
 import zope.event
-import threading
 import time
 import os
 from pathlib import Path
 
 
-def fire_when_playing(event):
-    if event == 'playing':
-        print('playing')
-    else:
-        print('nope')
-
-
-def find_state():
+def is_playing(interval):
 
     now_playing_file = get_now_playing_file()
     last_modif_time = last_modified(now_playing_file)
 
     while True:
 
-        if last_modif_time == last_modified(now_playing_file):
-            pass
-
-        else:
+        if last_modif_time != last_modified(now_playing_file):
             zope.event.notify('playing')
             last_modif_time = last_modified(now_playing_file)
 
-        time.sleep(5)
+        time.sleep(interval)
 
 
 def get_now_playing_file():
@@ -60,16 +49,9 @@ def get_spotify_dir():
 
     spotify_dir += '/' + username + '-user'
 
-    return str(Path(spotify_dir))  # String brackets are broken so passing it through Path() fixes it
+    return str(Path(spotify_dir))  # Slashes are both / & \ so passing it through Path() fixes it up
 
 
 def last_modified(path):
 
     return os.path.getmtime(path)
-
-
-zope.event.subscribers.append(fire_when_playing)
-
-t = threading.Thread(target=find_state)
-t.daemon = False
-t.start()
