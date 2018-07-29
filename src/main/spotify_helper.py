@@ -1,7 +1,6 @@
-import sys
-
-import os
 import traceback
+import sys
+import os
 
 from pynput.keyboard import Key, KeyCode, Listener
 

@@ -1,17 +1,34 @@
-from src.is_spotify_playing.is_playing import run_command
 import zope.event
 import time
+import subprocess
 
 
-def is_playing(interval):
+def run_command(command):
+
+    result = subprocess.run(command.split(' '), stdout=subprocess.PIPE)
+
+    if result.returncode is not 0:
+        raise NameError
+
+    return result.stdout.decode('utf-8').rstrip()
+
+
+def is_now_playing(interval):
 
     old_state = get_player_state()
+    old_song = get_song_id()
 
     while True:
-        if old_state != get_player_state():
-            old_state = get_player_state()
+        state, song = get_player_state(), get_song_id()
+        if old_state != state:
+            old_state = state
 
-            if old_state == 'playing':
+            if state == 'playing':
+                zope.event.notify('playing')
+
+        if old_song != song:
+            old_song = song
+            if state == 'playing':
                 zope.event.notify('playing')
 
         time.sleep(interval)
@@ -20,3 +37,8 @@ def is_playing(interval):
 def get_player_state():
 
     return run_command('tell application "Spotify" to player state as string')
+
+
+def get_song_id():
+
+    return run_command('tell application "Spotify" to id of current track as string')

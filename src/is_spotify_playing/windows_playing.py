@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-def is_playing(interval):
+def is_now_playing(interval):
 
     now_playing_file = get_now_playing_file()
     last_modif_time = last_modified(now_playing_file)
