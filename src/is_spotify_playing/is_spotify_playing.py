@@ -3,15 +3,15 @@ import subprocess
 import time
 
 
-def is_spotify_playing():
+def alert_when_spotify_playing(interval):
     current_os = platform.system()
 
     if current_os == 'Linux':
-        return is_playing_linux()
+        return is_playing_linux(interval)
     if current_os == 'Darwin':
-        return is_playing_mac()
+        return is_playing_mac(interval)
     if current_os == 'Windows':
-        return is_playing_windows()
+        return is_playing_windows(interval)
 
 
 def run_command(command):
@@ -24,7 +24,7 @@ def run_command(command):
     return result.stdout.decode('utf-8').rstrip()
 
 
-def is_playing_mac():
+def is_playing_mac(interval):
 
     state = run_command('tell application "Spotify" to player state as string')
 
@@ -33,11 +33,9 @@ def is_playing_mac():
 
 def is_playing_windows():
 
-    import watcher
+    import os
 
-    w = watcher.Watcher(dir, callback)
-    w.flags = watcher.FILE_NOTIFY_CHANGE_FILE_NAME
-    w.start()
+
 
 
 def is_playing_linux():
