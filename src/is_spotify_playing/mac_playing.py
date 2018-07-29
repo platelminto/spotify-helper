@@ -5,10 +5,10 @@ import subprocess
 
 def run_command(command):
 
-    result = subprocess.run(command.split(' '), stdout=subprocess.PIPE)
+    result = subprocess.run(['osascript', '-e', command], stdout=subprocess.PIPE)
 
     if result.returncode is not 0:
-        raise NameError
+        print('Error, spotify probably not running')
 
     return result.stdout.decode('utf-8').rstrip()
 
