@@ -1,6 +1,10 @@
 import zope.event
 import threading
 import platform
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import linux_playing, mac_playing, windows_playing
 
