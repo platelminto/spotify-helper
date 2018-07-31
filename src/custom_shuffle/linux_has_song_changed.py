@@ -5,6 +5,9 @@ import subprocess
 from spotify_api.dbus_api import DBusApi
 
 
+stop = False
+
+
 def run_command(command):
 
     result = subprocess.run(command.split(' '), stdout=subprocess.PIPE)
@@ -15,12 +18,15 @@ def run_command(command):
     return result.stdout.decode('utf-8').rstrip()
 
 
-def is_now_playing(interval):
+def has_song_changed(interval):
 
-    old_state = get_player_state()
+    # old_state = get_player_state()
     old_song = get_song_id()
 
-    while True:
+    global stop
+    stop = False
+
+    while not stop:
         state, song = get_player_state(), get_song_id()
         # if old_state != state:
         #     old_state = state
@@ -34,6 +40,12 @@ def is_now_playing(interval):
                 zope.event.notify('playing')
 
         time.sleep(interval)
+
+
+def stop_listening():
+
+    global stop
+    stop = True
 
 
 def get_song_id():
@@ -61,7 +73,7 @@ def get_player_state():
 
         state = state_line.strip().split(' ')[1]
 
-        return state
+        return state  # 'RUNNING' when playing and 'CORKED' otherwise (mostly)
 
     except (ValueError, UnboundLocalError):
         return ''

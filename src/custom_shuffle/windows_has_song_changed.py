@@ -4,12 +4,18 @@ import os
 from pathlib import Path
 
 
-def is_now_playing(interval):
+stop = False
 
-    now_playing_file = get_now_playing_file()
+
+def has_song_changed(interval):
+
+    now_playing_file = get_song_changed_file()
     last_modif_time = last_modified(now_playing_file)
 
-    while True:
+    global stop
+    stop = False
+
+    while not stop:
 
         if last_modif_time != last_modified(now_playing_file):
             zope.event.notify('playing')
@@ -18,7 +24,7 @@ def is_now_playing(interval):
         time.sleep(interval)
 
 
-def get_now_playing_file():
+def get_song_changed_file():
 
     spotify_dir = get_spotify_dir()
 
@@ -27,6 +33,12 @@ def get_now_playing_file():
             now_playing_file = item
 
     return spotify_dir + '/' + now_playing_file
+
+
+def stop_listening():
+
+    global stop
+    stop = True
 
 
 def get_spotify_dir():
