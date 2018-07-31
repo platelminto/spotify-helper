@@ -38,7 +38,7 @@ class DBusApi:
 
         while not self.spotify_open:
 
-            time.sleep(10)
+            time.sleep(5)
 
             try:
                 self.spotify_bus = self.session_bus.get_object('org.mpris.MediaPlayer2.spotify',
@@ -48,6 +48,12 @@ class DBusApi:
             except dbus.exceptions.DBusException:
                 pass
 
+        self.spotify_properties = dbus.Interface(self.spotify_bus,
+                                                 'org.freedesktop.DBus.Properties')
+        self.metadata = self.spotify_properties.Get(self.player, 'Metadata')
+
+        self.interface = dbus.Interface(self.spotify_bus, self.player)
+
     # Spotify doesn't support the majority of available properties
     def get_property(self, player_propety):
 
@@ -56,15 +62,27 @@ class DBusApi:
     # Same as above
     def set_property(self, player_propety, value):
 
-        return self.spotify_properties.Set('org.mpris.MediaPlayer2.Player', player_propety, value)
+        try:
+            return self.spotify_properties.Set('org.mpris.MediaPlayer2.Player', player_propety, value)
+        except AttributeError:
+            print('Spotify still starting')
+            return ''
 
     def run_method(self, method_str, *args):
 
-        return getattr(self.interface, method_str)(*args)
+        try:
+            return getattr(self.interface, method_str)(*args)
+        except AttributeError:
+            print('Spotify still starting')
+            return ''
 
     def get_info(self, info_str):
 
-        return self.metadata.get(info_str)
+        try:
+            return self.metadata.get(info_str)
+        except AttributeError:
+            print('Spotify still starting')
+            return ''
 
     def get_track_id(self):
 

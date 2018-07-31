@@ -23,7 +23,7 @@ def get_now_playing_file():
     spotify_dir = get_spotify_dir()
 
     for item in os.listdir(spotify_dir):
-        if 'ad-state-storage.bnk' in item:
+        if 'recently_played.bnk' in item:
             now_playing_file = item
 
     return spotify_dir + '/' + now_playing_file

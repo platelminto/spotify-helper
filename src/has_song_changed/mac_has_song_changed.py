@@ -20,11 +20,11 @@ def is_now_playing(interval):
 
     while True:
         state, song = get_player_state(), get_song_id()
-        if old_state != state:
-            old_state = state
-
-            if state == 'playing':
-                zope.event.notify('playing')
+        # if old_state != state:
+        #     old_state = state
+        #
+        #     if state == 'playing':
+        #         zope.event.notify('playing')
 
         if old_song != song:
             old_song = song

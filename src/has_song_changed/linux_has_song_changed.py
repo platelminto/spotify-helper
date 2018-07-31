@@ -22,11 +22,11 @@ def is_now_playing(interval):
 
     while True:
         state, song = get_player_state(), get_song_id()
-        if old_state != state:
-            old_state = state
-
-            if state == 'RUNNING':
-                zope.event.notify('playing')
+        # if old_state != state:
+        #     old_state = state
+        #
+        #     if state == 'RUNNING':
+        #         zope.event.notify('playing')
 
         if old_song != song:
             old_song = song
@@ -38,9 +38,13 @@ def is_now_playing(interval):
 
 def get_song_id():
 
-    dbus_api = DBusApi()
+    try:
+        dbus_api = DBusApi()
 
-    return dbus_api.get_track_id()
+        return dbus_api.get_track_id()
+
+    except Exception:
+        return ''
 
 
 def get_player_state():
