@@ -28,7 +28,7 @@ class HasSongChanged:
 
     def fire_when_playing(self, event):
 
-        self.func('x')
+        self.func(str(event))
 
     def start_listening(self):
 

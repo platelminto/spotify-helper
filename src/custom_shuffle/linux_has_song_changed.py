@@ -37,7 +37,7 @@ def has_song_changed(interval):
         if old_song != song:
             old_song = song
             if state == 'RUNNING':
-                zope.event.notify('playing')
+                zope.event.notify(get_song_id())
 
         time.sleep(interval)
 
@@ -51,9 +51,8 @@ def stop_listening():
 def get_song_id():
 
     try:
-        dbus_api = DBusApi()
 
-        return dbus_api.get_track_id()
+        return DBusApi().get_track_id()
 
     except Exception:
         return ''

@@ -35,7 +35,7 @@ def has_song_changed(interval):
         if old_song != song:
             old_song = song
             if state == 'playing':
-                zope.event.notify('playing')
+                zope.event.notify(get_song_id())
 
         time.sleep(interval)
 

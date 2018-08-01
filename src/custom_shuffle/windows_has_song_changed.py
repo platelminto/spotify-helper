@@ -3,6 +3,7 @@ import time
 import os
 from pathlib import Path
 
+SONG_ID_LENGTH = 22
 
 stop = False
 
@@ -18,7 +19,7 @@ def has_song_changed(interval):
     while not stop:
 
         if last_modif_time != last_modified(now_playing_file):
-            zope.event.notify('playing')
+            zope.event.notify(get_song_id())
             last_modif_time = last_modified(now_playing_file)
 
         time.sleep(interval)
@@ -31,8 +32,31 @@ def get_song_changed_file():
     for item in os.listdir(spotify_dir):
         if 'recently_played.bnk' in item:
             now_playing_file = item
+            break
 
     return spotify_dir + '/' + now_playing_file
+
+
+def get_song_id():
+
+    spotify_dir = get_spotify_dir()
+
+    for item in os.listdir(spotify_dir):
+        if 'recently_played.bnk' in item:
+            now_playing_file = item
+            break
+
+    with open(spotify_dir + '/' + now_playing_file) as playing_file:
+
+        curent_song_line = playing_file.readline()
+        current_song_marker = 'spotify:track:'
+
+        while current_song_marker not in curent_song_line:
+            curent_song_line = playing_file.readline()
+
+        id_beginning_index = curent_song_line.find(current_song_marker) + len(curent_song_line)
+
+    return curent_song_line[id_beginning_index:id_beginning_index+SONG_ID_LENGTH]
 
 
 def stop_listening():

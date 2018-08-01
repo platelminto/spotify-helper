@@ -1,17 +1,20 @@
 import sys
 import os
+import platform
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from custom_shuffle import HasSongChanged
+from has_song_changed import HasSongChanged
 
 
 class CustomShuffle:
 
     def __init__(self):
 
-        self.song_changed = HasSongChanged(5, self.has_taken_over)
+        self.song_changed = HasSongChanged(5, self.has_taken_over, False)
         self.shuffle_list = list()
+
+        self.os = platform.system()
 
     def enable(self):
 
@@ -21,11 +24,11 @@ class CustomShuffle:
 
         self.song_changed.stop_listening()
 
-    def has_taken_over(self):
+    def has_taken_over(self, song_id):  # Called when song changes, arguments already provided
 
-        pass
+        print(song_id)
 
-    def is_song_in_playlist(self):
+    def is_currently_playing_still_correct(self):
 
         pass
 
@@ -33,3 +36,10 @@ class CustomShuffle:
 
         pass
 
+    def get_playlist_from_web(self):
+
+        pass
+
+
+cs = CustomShuffle()
+cs.enable()
