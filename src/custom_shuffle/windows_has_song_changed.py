@@ -48,15 +48,15 @@ def get_song_id():
 
     with open(spotify_dir + '/' + now_playing_file) as playing_file:
 
-        curent_song_line = playing_file.readline()
+        current_song_line = playing_file.readline()
         current_song_marker = 'spotify:track:'
 
-        while current_song_marker not in curent_song_line:
-            curent_song_line = playing_file.readline()
+        while current_song_marker not in current_song_line:
+            current_song_line = playing_file.readline()
 
-        id_beginning_index = curent_song_line.find(current_song_marker) + len(curent_song_line)
+        id_beginning_index = current_song_line.find(current_song_marker) + len(current_song_marker)
 
-    return curent_song_line[id_beginning_index:id_beginning_index+SONG_ID_LENGTH]
+    return current_song_line[id_beginning_index:id_beginning_index + SONG_ID_LENGTH]
 
 
 def stop_listening():
