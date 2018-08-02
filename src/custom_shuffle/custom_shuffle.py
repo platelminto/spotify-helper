@@ -31,15 +31,16 @@ def create_shuffled_list(unshuffled_list):
 
 class CustomShuffle:
 
-    def __init__(self, spotify):
+    def __init__(self):
 
         self.song_changed = HasSongChanged(5, self.has_taken_over, False)
         self.shuffled_list = list()
         self.current_list_counter = 0
 
-        self.spotify = spotify
-
         self.os = platform.system()
+
+        if self.os == 'Linux':
+            self.spotify = Spotify()
 
     def enable(self):
 
@@ -75,7 +76,7 @@ class CustomShuffle:
 
         else:
 
-            print()
+            print(self.song_changed.get_song_context_type())
 
     def is_cache_updated(self):
 
@@ -94,5 +95,5 @@ class CustomShuffle:
         pass
 
 
-cs = CustomShuffle(Spotify())
+cs = CustomShuffle()
 cs.get_current_context()

@@ -4,8 +4,6 @@ import os
 
 from pathlib import Path
 
-from custom_shuffle import get_song_context
-
 SONG_ID_LENGTH = 22
 
 stop = False
@@ -60,16 +58,6 @@ def get_song_id():
         id_beginning_index = current_song_line.find(current_song_marker) + len(current_song_marker)
 
     return current_song_line[id_beginning_index:id_beginning_index + SONG_ID_LENGTH]
-
-
-def get_song_context_id():
-
-    return get_song_context(get_spotify_dir())[1]
-
-
-def get_song_context_type():
-
-    return get_song_context(get_spotify_dir())[0]
 
 
 def stop_listening():

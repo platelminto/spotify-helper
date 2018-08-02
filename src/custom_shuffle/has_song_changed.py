@@ -11,12 +11,12 @@ def get_song_context(spotify_dir):
             now_playing_file = item
             break
 
-    with open(spotify_dir + '/' + now_playing_file) as playing_file:
+    with open(spotify_dir + '/' + now_playing_file, errors='replace') as playing_file:
         current_song_line = playing_file.readline()
         current_context_marker = 'spotify:'
 
-    while current_context_marker not in current_song_line:
-        current_song_line = playing_file.readline()
+        while current_context_marker not in current_song_line:
+            current_song_line = playing_file.readline()
 
     id_beginning_index = current_song_line.find(current_context_marker) + len(current_context_marker)
 
