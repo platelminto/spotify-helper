@@ -6,6 +6,7 @@ import random
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from has_song_changed import HasSongChanged
+from spotify_api.spotify import Spotify
 
 
 NEXT_SONG_STRICTNESS = 5
@@ -30,11 +31,13 @@ def create_shuffled_list(unshuffled_list):
 
 class CustomShuffle:
 
-    def __init__(self):
+    def __init__(self, spotify):
 
         self.song_changed = HasSongChanged(5, self.has_taken_over, False)
         self.shuffled_list = list()
         self.current_list_counter = 0
+
+        self.spotify = spotify
 
         self.os = platform.system()
 
@@ -58,11 +61,21 @@ class CustomShuffle:
 
         except IndexError:
 
-            self.reshuffle_playlist()
+            self.reshuffle_context()
 
-    def reshuffle_playlist(self):
+    def reshuffle_context(self):
 
-        pass
+        self.get_current_context()
+
+    def get_current_context(self):
+
+        if self.os == 'Linux':
+
+            print(self.spotify.call_player_method('currently-playing', 'get').json().get('context').get('type'))
+
+        else:
+
+            print()
 
     def is_cache_updated(self):
 
@@ -72,6 +85,14 @@ class CustomShuffle:
 
         pass
 
+    def get_playlist_snapshot_id(self):
+
+        pass
+
     def send_custom_shuffle(self):
 
         pass
+
+
+cs = CustomShuffle(Spotify())
+cs.get_current_context()

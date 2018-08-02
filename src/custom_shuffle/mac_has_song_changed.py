@@ -2,6 +2,7 @@ import zope.event
 import time
 import subprocess
 
+from pathlib import Path
 
 stop = False
 
@@ -44,6 +45,20 @@ def stop_listening():
 
     global stop
     stop = True
+
+
+def get_spotify_dir():
+
+    home = Path.home()
+    home = home + '/Library/Application Support/Spotify/Users'
+
+    with open('../user_id.txt') as user_id:
+
+        username = user_id.readline()
+
+    home = home + '/' + username + '-user'
+
+    return home
 
 
 def get_player_state():

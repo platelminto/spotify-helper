@@ -1,6 +1,32 @@
 import zope.event
 import threading
 import platform
+import os
+
+
+def get_song_context(spotify_dir):
+
+    for item in os.listdir(spotify_dir):
+        if 'recently_played.bnk' in item:
+            now_playing_file = item
+            break
+
+    with open(spotify_dir + '/' + now_playing_file) as playing_file:
+        current_song_line = playing_file.readline()
+        current_context_marker = 'spotify:'
+
+    while current_context_marker not in current_song_line:
+        current_song_line = playing_file.readline()
+
+    id_beginning_index = current_song_line.find(current_context_marker) + len(current_context_marker)
+
+    info = current_song_line[id_beginning_index:].split('$')[0].split(':')
+
+    if info[0] == 'user':
+        return info[2], info[3]
+
+    else:
+        return info[0], info[1]
 
 
 class HasSongChanged:
@@ -39,3 +65,11 @@ class HasSongChanged:
     def stop_listening(self):
 
         self.has_song_changed.stop_listening()
+
+    def get_song_context_id(self):
+
+        return get_song_context(self.has_song_changed.get_spotify_dir())[1]
+
+    def get_song_context_type(self):
+
+        return get_song_context(self.has_song_changed.get_spotify_dir())[0]
