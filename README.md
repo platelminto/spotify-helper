@@ -13,7 +13,6 @@ To install all the dependencies needed, find the appropriate requirements text f
 
 `pip install -r requirements.txt`
 
-They are also listed below, together with a link to their site & how they are used:
 
 #### For all OSes
 
