@@ -3,7 +3,7 @@ Provides various utility methods to interact with Spotify, mostly through the ab
 
 The program first tries to directly interact with the Spotify client (unavailable on Windows), and then falls back on using the Web API; some methods are only available using the Web API.
 
-For this, Spotify developer API keys are required: in the `src/keys.txt` file, replace the placeholders on the first & second lines with your client id & client secret. They can be obtained from making an API application [here](https://beta.developer.spotify.com/dashboard/applications). Additionally, in the application dashboard, go to 'Edit Settings', and set the redirect URI to 'http://localhost:8888/callback'
+Since the Web API is always needed, Spotify developer API keys are required: in the `src/keys.txt` file, replace the placeholders on the first & second lines with your client id & client secret. They can be obtained from making an API application [here](https://developer.spotify.com/dashboard/applications). Additionally, in the application dashboard, go to 'Edit Settings', and set the redirect URI to 'http://localhost:8888/callback'
 
 On first run, a browser window should open asking for your Spotify accounts' permission to let the app handle parts of your account - after accepting, the url should point to localhost, with a single `code` parameter: copy its value into the commandline (which should be awaiting input). From then on, nothing other than starting up the script should be required.
 
@@ -14,11 +14,15 @@ To install all the dependencies needed, find the appropriate requirements text f
 `pip install -r requirements.txt`
 
 
-#### For all OSes
+#### General dependencies
 
 - [Requests](http://docs.python-requests.org/en/master/) - to communicate easily with the Spotify API service.
 - [pynput](https://pythonhosted.org/pynput/) - to read keyboard input regardless of platform.
 
-#### Windows
+#### Windows-specific dependencies
 
 - [pywin32](https://pypi.python.org/pypi/pywin32) - to be able to send notifications on Windows.
+
+#### Linux-specific dependencies
+
+- [dbus-python](https://pypi.org/project/dbus-python) - to be able to interact with the Spotify client. **This dependency should already be installed on most Linux systems**, but if it isn't available, either install it from PyPI (`pip install dbus-python`) or, if you are using a virtual environment, copy the dbus python files from your system into the virtual environments lib folder (as described [here](https://stackoverflow.com/a/23237728)).
