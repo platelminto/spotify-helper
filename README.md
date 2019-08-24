@@ -25,4 +25,4 @@ To install all the dependencies needed, find the appropriate requirements text f
 
 #### Linux-specific dependencies
 
-- [dbus-python](https://pypi.org/project/dbus-python) - to be able to interact with the Spotify client. **This dependency should already be installed on most Linux systems**, but if it isn't available, either install it from PyPI (`pip install dbus-python`) or, if you are using a virtual environment, copy the dbus python files from your system into the virtual environments lib folder (as described [here](https://stackoverflow.com/a/23237728)).
+- [dbus-python](https://pypi.org/project/dbus-python) - to be able to interact with the Spotify client. **This dependency should already be installed on most Linux systems**, but if it isn't available, either install it from PyPI (`pip install dbus-python`) or, if you are using a virtual environment, copy the dbus python files from your system into the virtual environment's lib folder (as described [here](https://stackoverflow.com/a/23237728)).
