@@ -1,3 +1,5 @@
+import sys
+
 import requests
 import time
 import webbrowser
@@ -101,6 +103,15 @@ class WebApi:
             return
 
         info = r.json()
+
+        if 'error' in info:
+            print('ERROR:', end=" ")
+            if info.get('error') == 'invalid_client':
+                print('Please set your client ID & secret in the src/keys.txt file, as described'
+                      ' in the README.')
+            else:
+                print(info.get('error_description'))
+            quit(1)
 
         if not set(info.get('scope').split(' ')).issuperset(set(self.scope_list)):
             self.write_auth_info()
