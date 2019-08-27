@@ -27,7 +27,8 @@ def get_key_from_string(key_str):
 
 
 def on_press(key):
-    currently_pressed_keys.append(key)
+    if key not in currently_pressed_keys:
+        currently_pressed_keys.append(key)
 
     for key_tuple, methods in looking_for.items():
         if currently_pressed_keys == list(key_tuple):
