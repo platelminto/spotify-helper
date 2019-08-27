@@ -1,4 +1,5 @@
 import sys
+import os
 
 import requests
 import time
@@ -140,9 +141,9 @@ class WebApi:
 
         file.seek(0)
 
-        self.access_token = file.readline().rstrip('\n')
-        self.refresh_token = file.readline().rstrip('\n')
-        self.expiry_time = float(file.readline().rstrip('\n'))
+        self.access_token = file.readline().rstrip(os.linesep)
+        self.refresh_token = file.readline().rstrip(os.linesep)
+        self.expiry_time = float(file.readline().rstrip(os.linesep))
 
         print('authenticated')
 
