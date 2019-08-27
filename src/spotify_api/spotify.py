@@ -331,6 +331,10 @@ class Spotify:
             send_notif('Error', 'Must be premium')
             return
 
+        if status_code is 204 and method == '':
+            send_notif('Error', 'No device found')
+            return
+
         return response
 
     def toggle_save(self):

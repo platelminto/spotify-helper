@@ -34,7 +34,7 @@ class WindowsBalloonTip:
         Shell_NotifyIcon(NIM_ADD, nid)
         Shell_NotifyIcon(NIM_MODIFY,
                          (self.hwnd, 0, NIF_INFO, win32con.WM_USER + 20,
-                          hicon, "save-song-spotify", msg, 200, title))
+                          hicon, "spotify-helper", msg, 200, title))
         time.sleep(duration / 1000)
         DestroyWindow(self.hwnd)
         UnregisterClass(class_atom, hinst)
