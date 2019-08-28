@@ -238,7 +238,12 @@ class Spotify:
 
     def play(self):
 
-        self.try_local_method_then_web('play', 'play', 'put')
+        # Web API method for 'play' is currently broken, so instead we use the 'transfer playback'
+        # endpoint to "transfer" playback to the already active device, which allows us to give it
+        # a 'play' parameter to resume playback.
+        self.try_local_method_then_web('play', '', 'put',
+                                       payload={'device_ids': [self.current_device().get('id')],
+                                                'play': True})
 
     def save(self):
 
@@ -320,7 +325,7 @@ class Spotify:
             send_notif('Error', 'Must be premium')
             return
 
-        if status_code is 204 and method == '':
+        if status_code is 204 and method == '' and rest_function_name == 'get':
             send_notif('Error', 'No device found')
             return
 
