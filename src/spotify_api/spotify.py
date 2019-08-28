@@ -1,4 +1,5 @@
 import datetime
+import json
 import platform
 
 from main.notif_handler import send_notif, send_notif_with_web_image
@@ -237,19 +238,7 @@ class Spotify:
 
     def play(self):
 
-        # self.try_local_method_then_web('play',
-        #                                'play', 'put', payload=
-        #                                {'context_uri': 'spotify:album:1Je1IMUlBXcx1Fz0WE7oPT',
-        #                                 'offset':{'position': 5}})
-        #                                 # 'uris':
-        #                                 #     # ['spotify:track:4iV5W9uYEdYUVa79Axb7Rh',
-        #                                 #     #  'spotify:track:1301WleyT98MSxVHPZCA6M']})
-
-        try:
-            self.local_api.play()
-
-        except AttributeError:
-            self.try_local_method_then_web('play', 'play', 'put')
+        self.try_local_method_then_web('play', 'play', 'put')
 
     def save(self):
 
