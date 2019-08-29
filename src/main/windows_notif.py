@@ -1,3 +1,5 @@
+# Adapted from https://stackoverflow.com/a/17262942.
+
 from win32api import *
 from win32gui import *
 import win32con

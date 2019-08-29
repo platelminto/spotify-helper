@@ -74,6 +74,7 @@ def on_press(key):
         if currently_pressed_keys == list(key_tuple):
             for method in methods:
                 if method == 'quit':
+                    send_notif('Spotify helper stopped', '')
                     quit(0)
                 try:
                     getattr(spotify, method)()
