@@ -190,7 +190,7 @@ class WebApi:
 
         except requests.exceptions.ConnectionError:
             if retry is not 0:
-                return self.get(endpoint, params, timeout, retry - 1)
+                return self.post(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
 
@@ -204,7 +204,7 @@ class WebApi:
 
         except requests.exceptions.ConnectionError:
             if retry is not 0:
-                return self.get(endpoint, params, timeout, retry - 1)
+                return self.put(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
 
@@ -218,7 +218,7 @@ class WebApi:
 
         except requests.exceptions.ConnectionError:
             if retry is not 0:
-                return self.get(endpoint, params, timeout, retry - 1)
+                return self.delete(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
 
