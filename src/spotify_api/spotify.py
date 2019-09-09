@@ -2,6 +2,7 @@ import datetime
 import json
 import platform
 
+import uuid
 from main.notif_handler import send_notif, send_notif_with_web_image
 from spotify_api.web_api import WebApi
 
@@ -24,17 +25,26 @@ class Spotify:
         keys_file = open('../keys.txt')
 
         client_id = keys_file.readline().rstrip()
-        client_secret = keys_file.readline().rstrip()
 
         keys_file.close()
 
-        redirect_uri = 'http://localhost:8888/callback'
+        try:
+            with open('../uuid.txt') as uuid_file:
+                self.uuid = uuid.UUID(uuid_file.readline().rstrip())
+
+        except (FileNotFoundError, ValueError):
+            with open('../uuid.txt', 'w') as uuid_file:
+                new_uuid = uuid.uuid4()
+                uuid_file.write(str(new_uuid))
+                self.uuid = new_uuid
+
+        redirect_uri = 'https://platelminto.eu.pythonanywhere.com/users/registering'
 
         scope_list = ['user-library-read', 'user-library-modify', 'playlist-modify-public',
                       'user-modify-playback-state', 'user-read-playback-state']
 
         self.web_api = WebApi(scope_list=scope_list, client_id=client_id,
-                              client_secret=client_secret, redirect_uri=redirect_uri)
+                              redirect_uri=redirect_uri, uuid=self.uuid)
         if current_os == 'Darwin':
             self.local_api = AppleScriptApi()
 

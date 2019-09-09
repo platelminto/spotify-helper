@@ -1,11 +1,11 @@
 # Handles the authentication and communication with the Spotify Web API.
 
 import os
+import sys
 
 import requests
 import time
 import webbrowser
-import base64
 import json
 import threading
 
@@ -14,24 +14,25 @@ class WebApi:
 
     # This follows the 'Authorization Code Flow' path set out by
     # https://developer.spotify.com/documentation/general/guides/authorization-guide/#authorization-code-flow.
-    def __init__(self, scope_list, client_id, client_secret, redirect_uri):
+    def __init__(self, scope_list, client_id, redirect_uri, uuid):
         self.online = True
 
-        self.auth_keys_path = '../auth.txt'
+        self.access_token_path = '../auth.txt'
 
         self.api_url = 'https://api.spotify.com/v1/'
         self.authorize_access_url = 'https://accounts.spotify.com/authorize/'
-        self.get_token_url = 'https://accounts.spotify.com/api/token'
+        self.register_user_url = 'https://platelminto.eu.pythonanywhere.com/users/complete'
+        self.refresh_token_url = 'https://platelminto.eu.pythonanywhere.com/users/refresh'
 
         self.scope_list = scope_list
         self.client_id = client_id
-        self.client_secret = client_secret
         self.redirect_uri = redirect_uri
+        self.uuid = uuid
 
         # First try and see if authentication tokens already exist, and if they do checks
         # whether they need to be refreshed.
         try:
-            with open(self.auth_keys_path, 'r+') as file:
+            with open(self.access_token_path, 'r+') as file:
                 self.load_auth_values(file)
                 self.check_for_refresh_token(file, self.expiry_time)
 
@@ -41,14 +42,15 @@ class WebApi:
 
         # Keeps checking if we're online or not to be able to refresh tokens and generally
         # contact the Web API.
-        t = threading.Thread(target=self.check_online, args=(self.auth_keys_path,))
+        t = threading.Thread(target=self.check_online, args=(self.access_token_path,))
         t.daemon = True
         t.start()
 
     def write_auth_info(self):
-        file = open(self.auth_keys_path, 'w+')
+        file = open(self.access_token_path, 'w+')
         current_time = time.time()
-        info = self.get_access_info(self.get_auth_code())
+        self.generate_auth_code()
+        info = self.get_access_info()
 
         self.save_auth_values(file, info.get('access_token'), info.get('refresh_token'),
                               current_time + info.get('expires_in'))
@@ -60,21 +62,29 @@ class WebApi:
 
     # This is how the user can authenticate themselves and must follow the instructions
     # in the README.
-    def get_auth_code(self):
-        params = {'client_id': self.client_id, 'response_type': 'code', 'redirect_uri': self.redirect_uri,
+    def generate_auth_code(self):
+        params = {'client_id': self.client_id, 'response_type': 'code', 'state': self.uuid,
+                  'redirect_uri': self.redirect_uri,
                   'scope': ' '.join(self.scope_list)}
 
         r = requests.get(self.authorize_access_url, params=params)
         webbrowser.open_new(r.url)
-        return input('input code: ')
 
-    def get_access_info(self, auth_code):
-        payload = {'grant_type': 'authorization_code', 'code': auth_code,
-                   'redirect_uri': self.redirect_uri, 'client_id': self.client_id,
-                   'client_secret': self.client_secret}
+    def get_access_info(self):
+        timeout = time.time()
 
-        r = requests.post(self.get_token_url, data=payload)
-        return r.json()
+        while time.time() < timeout + 120:  # We spend 2 minutes waiting for auth confirmation
+            response = requests.post(self.register_user_url,
+                                     json={'uuid': str(self.uuid)})
+            print(response)
+            if response.status_code == 200:
+                print('authenticated')
+                return response.json()
+
+            time.sleep(5)
+
+        sys.stderr.write('Could not authenticate')
+        quit(1)
 
     def check_online(self, file_path):
         with open(file_path) as file:
@@ -87,13 +97,12 @@ class WebApi:
     # Gets the new tokens after previous ones expire, following the format described by
     # the Spotify authorization guide.
     def refresh_tokens(self, file):
-        payload = {'grant_type': 'refresh_token', 'refresh_token': self.refresh_token}
-        headers = {'Authorization': 'Basic ' + base64.b64encode(
-            (self.client_id + ':' + self.client_secret).encode('ascii')).decode('ascii')}
+        payload = {'grant_type': 'refresh_token', 'refresh_token': self.refresh_token,
+                   'uuid': str(self.uuid)}
         obtained_time = time.time()
 
         try:
-            r = requests.post(self.get_token_url, data=payload, headers=headers, timeout=4)
+            r = requests.post(self.refresh_token_url, json=payload, timeout=4)
             self.online = True
 
         except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
@@ -103,12 +112,7 @@ class WebApi:
         info = r.json()
 
         if 'error' in info:
-            print('ERROR:', end=" ")
-            if info.get('error') == 'invalid_client':
-                print('Please set your client ID & secret in the src/keys.txt file, as described'
-                      ' in the README.')
-            else:
-                print(info.get('error_description'))
+            sys.stderr.write(info.get('error_description'))
             quit(1)
 
         # If we need additional permissions and have added them to the scope, the
@@ -148,7 +152,7 @@ class WebApi:
 
     # The authorization values need to be in a specified header.
     def get_access_header(self):
-        with open(self.auth_keys_path, 'r+') as file:
+        with open(self.access_token_path, 'r+') as file:
             self.check_for_refresh_token(file, self.expiry_time)
 
         return {'Authorization': 'Bearer ' + self.access_token}
@@ -185,12 +189,13 @@ class WebApi:
     def post(self, endpoint, params=None, payload=None, timeout=4, retry=1):
         try:
             return self.check_status_code(requests.post(self.api_url + endpoint,
-                                                        data=json.dumps(payload), params=params, headers=self.get_access_header(),
+                                                        data=json.dumps(payload), params=params,
+                                                        headers=self.get_access_header(),
                                                         timeout=timeout))
 
         except requests.exceptions.ConnectionError:
             if retry is not 0:
-                return self.get(endpoint, params, timeout, retry - 1)
+                return self.post(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
 
@@ -199,12 +204,13 @@ class WebApi:
     def put(self, endpoint, params=None, payload=None, timeout=4, retry=1):
         try:
             return self.check_status_code(requests.put(self.api_url + endpoint,
-                                                       data=json.dumps(payload), params=params, headers=self.get_access_header(),
+                                                       data=json.dumps(payload), params=params,
+                                                       headers=self.get_access_header(),
                                                        timeout=timeout))
 
         except requests.exceptions.ConnectionError:
             if retry is not 0:
-                return self.get(endpoint, params, timeout, retry - 1)
+                return self.put(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
 
@@ -213,12 +219,13 @@ class WebApi:
     def delete(self, endpoint, params=None, payload=None, timeout=4, retry=1):
         try:
             return self.check_status_code(requests.delete(self.api_url + endpoint,
-                                                          data=json.dumps(payload), params=params, headers=self.get_access_header(),
+                                                          data=json.dumps(payload), params=params,
+                                                          headers=self.get_access_header(),
                                                           timeout=timeout))
 
         except requests.exceptions.ConnectionError:
             if retry is not 0:
-                return self.get(endpoint, params, timeout, retry - 1)
+                return self.delete(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
 
