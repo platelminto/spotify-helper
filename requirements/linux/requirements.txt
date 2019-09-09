@@ -6,3 +6,4 @@ python-xlib==0.22
 requests==2.22.0
 six==1.11.0
 urllib3==1.25.3
+uuid==1.30
