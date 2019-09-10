@@ -2,7 +2,7 @@ import datetime
 import platform
 
 import uuid
-from main.notif_handler import send_notif, send_notif_with_web_image
+from notifications.notif_handler import send_notif, send_notif_with_web_image
 from spotify_api.web_api import WebApi
 
 current_os = platform.system()

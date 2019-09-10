@@ -11,7 +11,7 @@ from pynput.keyboard import Key, KeyCode, Listener
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from spotify_api.spotify import Spotify
-from main.notif_handler import send_notif
+from notifications.notif_handler import send_notif
 
 bindings_file = '../bindings.txt'
 

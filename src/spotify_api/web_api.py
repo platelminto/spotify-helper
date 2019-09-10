@@ -83,8 +83,7 @@ class WebApi:
 
             time.sleep(5)
 
-        sys.stderr.write('Could not authenticate')
-        quit(1)
+        sys.exit('Could not authenticate') # TODO USER NOTIFY
 
     def check_online(self, file_path):
         with open(file_path) as file:
@@ -112,8 +111,7 @@ class WebApi:
         info = r.json()
 
         if 'error' in info:
-            sys.stderr.write(info.get('error_description'))
-            quit(1)
+            sys.exit(info.get('erro_description')) # TODO USER NOTIFY
 
         # If we need additional permissions and have added them to the scope, the
         # old keys will not work, and we need new authentication info.
@@ -135,9 +133,9 @@ class WebApi:
     def save_auth_values(self, file, access_token, refresh_token, expiry_time):
         file.seek(0)
 
-        file.write(access_token + '\n')
-        file.write(refresh_token + '\n')
-        file.write(str(expiry_time) + '\n')
+        file.write(access_token + os.linesep)
+        file.write(refresh_token + os.linesep)
+        file.write(str(expiry_time) + os.linesep)
 
         self.load_auth_values(file)
 
