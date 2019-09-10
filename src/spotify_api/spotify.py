@@ -1,5 +1,4 @@
 import datetime
-import json
 import platform
 
 import uuid
@@ -23,9 +22,7 @@ class Spotify:
 
     def __init__(self):
         keys_file = open('../keys.txt')
-
         client_id = keys_file.readline().rstrip()
-
         keys_file.close()
 
         try:
