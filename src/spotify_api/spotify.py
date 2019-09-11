@@ -1,5 +1,7 @@
 import datetime
 import platform
+import shelve
+import configparser
 
 import uuid
 from notifications.notif_handler import send_notif, send_notif_with_web_image
@@ -21,19 +23,16 @@ def get_device_name():
 class Spotify:
 
     def __init__(self):
-        keys_file = open('../keys.txt')
-        client_id = keys_file.readline().rstrip()
-        keys_file.close()
+        config = configparser.ConfigParser()
+        config.read('../config.ini')
+        client_id = config['authentication']['client_id']
 
-        try:
-            with open('../uuid.txt') as uuid_file:
-                self.uuid = uuid.UUID(uuid_file.readline().rstrip())
-
-        except (FileNotFoundError, ValueError):
-            with open('../uuid.txt', 'w') as uuid_file:
+        with shelve.open('../.info') as shelf:
+            if 'uuid' not in shelf:
+                shelf.clear()  # If we have lost the uuid, start as new
                 new_uuid = uuid.uuid4()
-                uuid_file.write(str(new_uuid))
-                self.uuid = new_uuid
+                shelf['uuid'] = new_uuid
+            self.uuid = shelf['uuid']
 
         redirect_uri = 'https://platelminto.eu.pythonanywhere.com/users/registering'
 
@@ -57,38 +56,54 @@ class Spotify:
         now = datetime.datetime.now()
         month, year = now.strftime('%B'), str(now.year)
 
-        try:
-            with open('../month_id.txt') as file:
-                line = file.readline().rstrip()
+        with shelve.open('../.info') as shelf:
+            # Check if months and years are available and are correct, if not, update
+            # playlist id.
+            if 'month' not in shelf or shelf['month'] != month:
+                shelf['month'] = month
+                shelf['monthly_playlist_id'] = self.__fetch_playlist_id(month, year)
+            if 'year' not in shelf or shelf['year'] != year:
+                shelf['year'] = year
+                shelf['monthly_playlist_id'] = self.__fetch_playlist_id(month, year)
+            return shelf['monthly_playlist_id']
 
-                if line == month + year:
-                    playlist_id = file.readline()
-
-                    if playlist_id != '':
-                        return playlist_id
-
-                raise ValueError
-
-        except (FileNotFoundError, ValueError):
-            with open('../month_id.txt', 'w+') as file:
-                file.write(month + year + '\n')
-                file.write(self.__fetch_playlist_id(month, year))
-
-            return self.get_monthly_playlist_id()
+        # try:
+        #     with open('../month_id.txt') as file:
+        #         line = file.readline().rstrip()
+        #
+        #         if line == month + year:
+        #             playlist_id = file.readline()
+        #
+        #             if playlist_id != '':
+        #                 return playlist_id
+        #
+        #         raise ValueError
+        #
+        # except (FileNotFoundError, ValueError):
+        #     with open('../month_id.txt', 'w+') as file:
+        #         file.write(month + year + '\n')
+        #         file.write(self.__fetch_playlist_id(month, year))
+        #
+        #     return self.get_monthly_playlist_id()
 
     def get_user_id(self):
-        try:
-            with open('../user_id.txt', 'r') as user_id:
-                line = user_id.readline()
-                if line == '':
-                    raise FileNotFoundError
-                return line
 
-        except FileNotFoundError:
-            with open('../user_id.txt', 'w+') as user_id:
-                user_id.write(self.__fetch_user_id())
-
-            return self.get_user_id()
+        with shelve.open('../.info') as shelf:
+            if 'user_id' not in shelf:
+                shelf['user_id'] = self.__fetch_user_id()
+            return shelf['user_id']
+        # try:
+        #     with open('../user_id.txt', 'r') as user_id:
+        #         line = user_id.readline()
+        #         if line == '':
+        #             raise FileNotFoundError
+        #         return line
+        #
+        # except FileNotFoundError:
+        #     with open('../user_id.txt', 'w+') as user_id:
+        #         user_id.write(self.__fetch_user_id())
+        #
+        #     return self.get_user_id()
 
     def __fetch_playlist_id(self, month, year):
         response = self.web_api.get('me/playlists').json()

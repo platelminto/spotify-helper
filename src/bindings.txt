@@ -12,4 +12,3 @@ toggle_repeat=
 toggle_shuffle=
 show_current_song=ctrl_l+shift+f10
 play_on_current_device=
-quit=ctrl_l+shift+f8

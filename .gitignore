@@ -1,11 +1,9 @@
 .project
 .pydevproject
 src/**/__pycache__/
-src/**/keys.txt
 *.iml
 .idea/
 bin/
-src/*.txt
-!src/bindings.txt
-features.txt
 venv
+src/.info
+src/config.ini

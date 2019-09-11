@@ -1,13 +1,13 @@
 # Handles the authentication and communication with the Spotify Web API.
 
 import os
+import shelve
 import sys
 
 import requests
 import time
 import webbrowser
 import json
-import threading
 
 
 class WebApi:
@@ -15,10 +15,6 @@ class WebApi:
     # This follows the 'Authorization Code Flow' path set out by
     # https://developer.spotify.com/documentation/general/guides/authorization-guide/#authorization-code-flow.
     def __init__(self, scope_list, client_id, redirect_uri, uuid):
-        self.online = True
-
-        self.access_token_path = '../auth.txt'
-
         self.api_url = 'https://api.spotify.com/v1/'
         self.authorize_access_url = 'https://accounts.spotify.com/authorize/'
         self.register_user_url = 'https://platelminto.eu.pythonanywhere.com/users/complete'
@@ -29,36 +25,23 @@ class WebApi:
         self.redirect_uri = redirect_uri
         self.uuid = uuid
 
-        # First try and see if authentication tokens already exist, and if they do checks
+        # Load authentication tokens, and if they do checks
         # whether they need to be refreshed.
-        try:
-            with open(self.access_token_path, 'r+') as file:
-                self.load_auth_values(file)
-                self.check_for_refresh_token(file, self.expiry_time)
+        self.load_auth_values()
+        self.check_for_refresh_token(self.expiry_time)
 
-        # If not, we need to obtain authorization from the user.
-        except (FileNotFoundError, ValueError):
-            self.write_auth_info()
-
-        # Keeps checking if we're online or not to be able to refresh tokens and generally
-        # contact the Web API.
-        t = threading.Thread(target=self.check_online, args=(self.access_token_path,))
-        t.daemon = True
-        t.start()
-
-    def write_auth_info(self):
-        file = open(self.access_token_path, 'w+')
+    def get_auth_info(self):
         current_time = time.time()
         self.generate_auth_code()
         info = self.get_access_info()
 
-        self.save_auth_values(file, info.get('access_token'), info.get('refresh_token'),
+        self.save_auth_values(info.get('access_token'), info.get('refresh_token'),
                               current_time + info.get('expires_in'))
 
     # The authorization keys need to be refreshed every once in a while
-    def check_for_refresh_token(self, file, expiry_time):
-        if time.time() > expiry_time and self.online:
-            self.refresh_tokens(file)
+    def check_for_refresh_token(self, expiry_time):
+        if time.time() > expiry_time:
+            self.refresh_tokens()
 
     # This is how the user can authenticate themselves and must follow the instructions
     # in the README.
@@ -83,75 +66,65 @@ class WebApi:
 
             time.sleep(5)
 
-        sys.exit('Could not authenticate') # TODO USER NOTIFY
-
-    def check_online(self, file_path):
-        with open(file_path) as file:
-            while True:
-                time.sleep(10)
-
-                if not self.online:
-                    self.refresh_tokens(file)
+        sys.exit('Could not authenticate')  # TODO USER NOTIFY
 
     # Gets the new tokens after previous ones expire, following the format described by
     # the Spotify authorization guide.
-    def refresh_tokens(self, file):
+    def refresh_tokens(self):
         payload = {'grant_type': 'refresh_token', 'refresh_token': self.refresh_token,
                    'uuid': str(self.uuid)}
         obtained_time = time.time()
 
         try:
             r = requests.post(self.refresh_token_url, json=payload, timeout=4)
-            self.online = True
 
         except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
-            self.online = False
-            return
+            raise ConnectionError
 
         info = r.json()
 
         if 'error' in info:
-            sys.exit(info.get('erro_description')) # TODO USER NOTIFY
+            sys.exit(info.get('erro_description'))  # TODO USER NOTIFY
 
         # If we need additional permissions and have added them to the scope, the
         # old keys will not work, and we need new authentication info.
         if not set(info.get('scope').split(' ')).issuperset(set(self.scope_list)):
-            self.write_auth_info()
+            self.get_auth_info()
 
         # 401 means there is a general unauthorized error, so we start anew with
         # the authentication process.
         if r.status_code == 401:
-            self.write_auth_info()
+            self.get_auth_info()
 
         if 'refresh_token' in info:
             self.refresh_token = info.get('refresh_token')
 
-        self.save_auth_values(file, info.get('access_token'), self.refresh_token,
+        self.save_auth_values(info.get('access_token'), self.refresh_token,
                               obtained_time + info.get('expires_in'))
-        self.load_auth_values(file)
+        self.load_auth_values()
 
-    def save_auth_values(self, file, access_token, refresh_token, expiry_time):
-        file.seek(0)
+    def save_auth_values(self, access_token, refresh_token, expiry_time):
+        with shelve.open('../.info') as shelf:
+            shelf['access_token'] = access_token
+            shelf['refresh_token'] = refresh_token
+            shelf['expiry_time'] = expiry_time
 
-        file.write(access_token + os.linesep)
-        file.write(refresh_token + os.linesep)
-        file.write(str(expiry_time) + os.linesep)
+        self.load_auth_values()
 
-        self.load_auth_values(file)
-
-    def load_auth_values(self, file):
-        file.seek(0)
-
-        self.access_token = file.readline().rstrip(os.linesep)
-        self.refresh_token = file.readline().rstrip(os.linesep)
-        self.expiry_time = float(file.readline().rstrip(os.linesep))
+    def load_auth_values(self):
+        try:
+            with shelve.open('../.info') as shelf:
+                self.access_token = shelf['access_token']
+                self.refresh_token = shelf['refresh_token']
+                self.expiry_time = shelf['expiry_time']
+        except KeyError:
+            self.get_auth_info()
 
         print('authenticated')
 
     # The authorization values need to be in a specified header.
     def get_access_header(self):
-        with open(self.access_token_path, 'r+') as file:
-            self.check_for_refresh_token(file, self.expiry_time)
+        self.check_for_refresh_token(self.expiry_time)
 
         return {'Authorization': 'Bearer ' + self.access_token}
 
