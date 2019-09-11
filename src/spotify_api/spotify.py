@@ -67,43 +67,11 @@ class Spotify:
                 shelf['monthly_playlist_id'] = self.__fetch_playlist_id(month, year)
             return shelf['monthly_playlist_id']
 
-        # try:
-        #     with open('../month_id.txt') as file:
-        #         line = file.readline().rstrip()
-        #
-        #         if line == month + year:
-        #             playlist_id = file.readline()
-        #
-        #             if playlist_id != '':
-        #                 return playlist_id
-        #
-        #         raise ValueError
-        #
-        # except (FileNotFoundError, ValueError):
-        #     with open('../month_id.txt', 'w+') as file:
-        #         file.write(month + year + '\n')
-        #         file.write(self.__fetch_playlist_id(month, year))
-        #
-        #     return self.get_monthly_playlist_id()
-
     def get_user_id(self):
-
         with shelve.open('../.info') as shelf:
             if 'user_id' not in shelf:
                 shelf['user_id'] = self.__fetch_user_id()
             return shelf['user_id']
-        # try:
-        #     with open('../user_id.txt', 'r') as user_id:
-        #         line = user_id.readline()
-        #         if line == '':
-        #             raise FileNotFoundError
-        #         return line
-        #
-        # except FileNotFoundError:
-        #     with open('../user_id.txt', 'w+') as user_id:
-        #         user_id.write(self.__fetch_user_id())
-        #
-        #     return self.get_user_id()
 
     def __fetch_playlist_id(self, month, year):
         response = self.web_api.get('me/playlists').json()
