@@ -1,5 +1,5 @@
-import os
-import sys
+# Is the main app, and needs to be the main thread for pystray to work correctly.
+
 import threading
 import time
 import webbrowser
@@ -18,8 +18,8 @@ class SpotifyThread(threading.Thread):
         import src.main.spotify_helper
 
 
-auth_checker_thread = SpotifyThread()
-auth_checker_thread.start()
+spotify_thread = SpotifyThread()
+spotify_thread.start()
 
 
 # Opens the bindings file in the default text editor (not in a web browser)
@@ -28,8 +28,6 @@ def open_bindings_file():
 
 
 if __name__ == "__main__":
-    authenticated = False
-
     icon_image = Image.open('../resources/spo.png')
 
     icon = Icon('spotify-helper', icon_image, menu=Menu(
@@ -39,7 +37,20 @@ if __name__ == "__main__":
         Menu.SEPARATOR,
         MenuItem(
             text='Quit',
-            action=lambda: sys.exit(0)
+            action=lambda: icon.stop()
         ),
     ))
+
+    # If the spotify_helper thread crashed, the program should exit completely.
+    def is_helper_alive():
+        while True:
+            if not spotify_thread.is_alive():
+                break
+            time.sleep(3)
+        icon.stop()
+
+    check_helper_alive_thread = threading.Thread(target=is_helper_alive)
+    check_helper_alive_thread.daemon = True
+    check_helper_alive_thread.start()
+
     icon.run()
