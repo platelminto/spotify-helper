@@ -5,6 +5,7 @@ import sys
 import os
 import traceback
 
+import requests
 from pynput.keyboard import Key, KeyCode, Listener
 
 # Needed for the program to work from an IDE and from the commandline.
@@ -15,7 +16,11 @@ from notifications.notif_handler import send_notif
 
 bindings_file = '../bindings.txt'
 
-spotify = Spotify()
+try:
+    spotify = Spotify()
+except requests.exceptions.ConnectionError:
+    send_notif('Spotify Helper closed', 'Check you have a working internet connection.')
+    sys.exit(1)
 
 currently_pressed_keys = list()
 looking_for = {}
