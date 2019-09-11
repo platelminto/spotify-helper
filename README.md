@@ -1,5 +1,5 @@
 ## spotify-helper
-Provides various utility methods to interact with Spotify, mostly through the ability to assign keyboard shortcuts to most Spotify functions. These are editable in the `bindings.txt` file. Run `spotify_helper.py` with python 3 to start the script (has to be run as sudo on macOS for keyboard access).
+Provides various utility methods to interact with Spotify, mostly through the ability to assign keyboard shortcuts to most Spotify functions. These are editable in the `bindings.txt` file. Run `spotify_helper.py` with python 3 to start the script (has to be run as sudo on macOS for keyboard access). **This version is behind as I have now set-up a server that makes the Web API authentication much easier - to get the client for this go [here](https://github.com/platelminto/spotify-helper-client).**
 
 The program first tries to directly interact with the Spotify client (unavailable on Windows), and then falls back on using the Web API; some methods are only available using the Web API.
 
