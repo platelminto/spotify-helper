@@ -6,4 +6,3 @@ src/**/__pycache__/
 bin/
 venv
 src/.info
-src/config.ini
