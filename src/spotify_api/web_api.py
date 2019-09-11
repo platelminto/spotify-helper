@@ -64,7 +64,7 @@ class WebApi:
                 print('authenticated')
                 return response.json()
 
-            time.sleep(5)
+            time.sleep(3)
 
         sys.exit('Could not authenticate')  # TODO USER NOTIFY
 
